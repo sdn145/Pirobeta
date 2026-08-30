@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Pirostore Official</title>
+  
+  <link rel="manifest" href="manifest.json" />
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    :root {
+      --bg-main: #06070c;
+      --app-bg: radial-gradient(circle at top right, #250b38 0%, #0d0e17 40%, #05060a 100%);
+      --card-bg: rgba(18, 20, 32, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #ff0055;
+      --primary-glow: rgba(255, 0, 85, 0.45);
+      --secondary: #00e5ff;
+      --secondary-glow: rgba(0, 229, 255, 0.45);
+      --gold: #ffd700;
+      --gold-glow: rgba(255, 215, 0, 0.4);
+      --text-white: #ffffff;
+      --text-dim: #9aa0b8;
+      --success: #00f5a0;
+      --danger: #ff2a5f;
+      --input-bg: rgba(13, 15, 24, 0.9);
+      --nav-bg: rgba(10, 11, 18, 0.94);
+      --header-bg: rgba(8, 9, 15, 0.88);
+      --item-hover: rgba(255, 255, 255, 0.05);
+      --store-card-grad: linear-gradient(145deg, rgba(30, 20, 45, 0.95), rgba(12, 14, 25, 0.98));
+    }
+
+    body.light-theme {
+      --bg-main: #e8ecf2;
+      --app-bg: linear-gradient(180deg, #f8faff 0%, #eef2f8 100%);
+      --card-bg: rgba(255, 255, 255, 0.92);
+      --card-border: rgba(0, 0, 0, 0.08);
+      --text-white: #111424;
+      --text-dim: #64748b;
+      --input-bg: #f1f5f9;
+      --nav-bg: rgba(255, 255, 255, 0.95);
+      --header-bg: rgba(255, 255, 255, 0.9);
+      --item-hover: rgba(0, 0, 0, 0.03);
+      --store-card-grad: linear-gradient(145deg, #ffffff, #f1f5f9);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-white);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .app-viewport {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      background: var(--app-bg);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 0 60px rgba(0,0,0,0.8);
+      border-left: 1px solid var(--card-border);
+      border-right: 1px solid var(--card-border);
+    }
+
+    .glass-box {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+    }
+
+    /* 1. ULTRA LUXURY LOADING SPLASH ANIMATION */
+    #luxurySplashScreen {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: radial-gradient(circle at center, #260a38 0%, #0d0e1a 45%, #040508 100%);
+      z-index: 99999999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+    }
+
+    .splash-glow-ring {
+      position: relative; width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; margin-bottom: 26px;
+    }
+
+    .splash-glow-ring::before, .splash-glow-ring::after {
+      content: ''; position: absolute; border-radius: 50%; inset: -8px;
+      border: 3px dashed transparent; border-top-color: var(--secondary); border-bottom-color: var(--primary);
+      box-shadow: 0 0 25px var(--secondary-glow); animation: spinSplash 2.2s linear infinite;
+    }
+
+    .splash-logo-img {
+      width: 110px; height: 110px; border-radius: 32px; object-fit: cover;
+      box-shadow: 0 0 35px var(--secondary-glow), inset 0 0 20px rgba(255,255,255,0.4);
+      border: 2px solid rgba(0, 229, 255, 0.6); z-index: 2;
+    }
+
+    .splash-title {
+      font-family: 'Orbitron', sans-serif; font-size: 28px; font-weight: 900; letter-spacing: 4px;
+      background: linear-gradient(90deg, #ffffff 0%, #00e5ff 40%, #ff0055 70%, #ffd700 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 6px; text-transform: uppercase;
+    }
+
+    .splash-sub {
+      font-size: 11px; font-weight: 800; letter-spacing: 3px; color: var(--secondary); text-transform: uppercase; margin-bottom: 28px;
+    }
+
+    .splash-progress-track {
+      width: 240px; height: 7px; background: rgba(255, 255, 255, 0.06); border-radius: 20px; overflow: hidden;
+      border: 1.5px solid rgba(0, 229, 255, 0.3);
+    }
+
+    .splash-progress-bar {
+      height: 100%; width: 0%; background: linear-gradient(90deg, var(--secondary), var(--primary), var(--gold)); border-radius: 20px; transition: width 0.08s linear;
+    }
+
+    .splash-percent-txt {
+      font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 900; color: var(--gold); margin-top: 10px; letter-spacing: 1.5px;
+    }
+
+    #globalMaintenanceOverlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100vw; height: 100vh;
+      background: #05060a; z-index: 9999999 !important; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center;
+    }
+
+    .maint-laser-icon {
+      width: 90px; height: 90px; margin-bottom: 20px; border-radius: 50%; background: rgba(255, 42, 95, 0.12);
+      border: 2px dashed var(--danger); display: flex; align-items: center; justify-content: center; font-size: 38px; color: var(--danger);
+    }
+
+    #auth-screen {
+      padding: 40px 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; z-index: 20;
+    }
+
+    .brand-logo-container { position: relative; margin-bottom: 20px; }
+    .brand-logo { width: 110px; height: 110px; border-radius: 28px; border: 2px solid var(--secondary); object-fit: cover; }
+    .brand-title { font-size: 28px; font-weight: 800; letter-spacing: 2px; background: linear-gradient(135deg, var(--text-white) 20%, #00e5ff 60%, #ff0055 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; }
+    .brand-tagline { font-size: 11px; color: var(--text-dim); letter-spacing: 2px; margin-bottom: 25px; text-transform: uppercase; font-weight: 600; }
+
+    .auth-tab-switch { display: flex; width: 100%; background: rgba(10, 11, 16, 0.3); border-radius: 14px; padding: 4px; margin-bottom: 20px; border: 1px solid var(--card-border); }
+    .auth-tab-btn { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 700; border-radius: 10px; cursor: pointer; color: var(--text-dim); }
+    .auth-tab-btn.active { background: linear-gradient(135deg, var(--primary), #b3003b); color: #fff; }
+
+    .input-field { width: 100%; margin-bottom: 14px; }
+    .input-field label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; }
+    .input-field input, .input-field select, .input-field textarea {
+      width: 100%; padding: 13px 16px; border-radius: 12px; background: var(--input-bg); border: 1px solid var(--card-border); color: var(--text-white); font-size: 13px; outline: none;
+    }
+
+    .btn-lux-primary {
+      width: 100%; padding: 14px; border-radius: 12px; background: linear-gradient(135deg, #00e5ff, #0077b6); color: #05060a; font-weight: 800; font-size: 14px; border: none; cursor: pointer;
+    }
+
+    .btn-google-real {
+      width: 100%; padding: 13px; background: #ffffff; color: #3c4043; font-weight: 700; font-size: 14px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 15px;
+    }
+
+    #main-app { display: none; flex-direction: column; min-height: 100vh; padding-bottom: 95px; }
+
+    .top-lux-header {
+      padding: 14px 18px; background: var(--header-bg); border-bottom: 1px solid var(--card-border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 40; backdrop-filter: blur(15px);
+    }
+
+    .brand-header-mini { display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 15px; letter-spacing: 1px; background: linear-gradient(90deg, #fff, var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    .role-badge-pill { font-size: 9px; font-weight: 800; padding: 3px 8px; border-radius: 6px; display: inline-block; text-transform: uppercase; }
+    .role-newbie { background: rgba(120, 130, 150, 0.25); color: var(--text-white); border: 1px solid rgba(255,255,255,0.1); }
+    .role-vip { background: linear-gradient(90deg, #ffd700, #ff8c00); color: #000; font-weight: 900; }
+    .role-owner { background: linear-gradient(90deg, #ff0055, #990033); color: #fff; }
+    .role-ceo { background: linear-gradient(90deg, #00e5ff, #0077b6); color: #000; }
+
+    .header-btn-vip-info { display: none; align-items: center; gap: 6px; background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 140, 0, 0.25)); border: 1px solid var(--gold); color: var(--gold); font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 10px; cursor: pointer; }
+
+    .bottom-navbar {
+      position: fixed; bottom: 0; width: 100%; max-width: 480px; height: 72px; background: var(--nav-bg); backdrop-filter: blur(20px); border-top: 1px solid var(--card-border); display: flex; align-items: center; z-index: 50; padding: 0 4px; overflow-x: auto; scrollbar-width: none;
+    }
+    .bottom-navbar::-webkit-scrollbar { display: none; }
+
+    .nav-tab-item {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-dim); font-size: 8.5px; font-weight: 600; cursor: pointer; gap: 3px; min-width: 52px; flex: 1 0 auto; padding: 4px 2px;
+    }
+    .nav-tab-item i { font-size: 15px; }
+    .nav-tab-item.active { color: var(--secondary); font-weight: 800; }
+
+    .page-view { display: none; padding: 20px; }
+    .page-view.active { display: block; }
+
+    .hero-banner {
+      background: linear-gradient(135deg, rgba(255, 0, 85, 0.25) 0%, rgba(0, 229, 255, 0.25) 100%), var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 22px; margin-bottom: 24px;
+    }
+
+    .section-headline { font-size: 16px; font-weight: 800; margin: 18px 0 14px; display: flex; align-items: center; gap: 8px; }
+
+    .lux-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 18px; overflow: hidden; margin-bottom: 18px; }
+    .lux-card-img-wrapper { width: 100%; aspect-ratio: 1 / 1; background: #000; display: flex; align-items: center; justify-content: center; }
+    .lux-card-img { width: 100%; height: 100%; object-fit: contain; }
+    .lux-card-content { padding: 16px; }
+
+    .lux-badge-time { display: inline-flex; align-items: center; gap: 5px; background: rgba(0, 245, 160, 0.12); color: var(--success); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 8px; margin-bottom: 10px; }
+    .lux-order-btn { width: 100%; padding: 12px; border-radius: 10px; background: linear-gradient(135deg, var(--primary), #e6004c); color: #fff; font-weight: 700; font-size: 13px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+    .vip-benefit-showcase { background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(0, 229, 255, 0.08)); border: 1.5px solid var(--gold); border-radius: 18px; padding: 18px; margin-bottom: 20px; }
+    .vip-benefit-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+    .vip-benefit-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 12px; line-height: 1.4; color: var(--text-white); }
+    .vip-benefit-list li i { color: var(--gold); font-size: 14px; margin-top: 2px; }
+
+    .vip-card-plan { background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,0,85,0.05)); border: 1px solid rgba(255,215,0,0.3); border-radius: 16px; padding: 18px; margin-bottom: 14px; }
+    .vip-card-plan.highlight { border: 2px solid var(--gold); }
+
+    .store-profile-card { background: var(--store-card-grad); border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 24px; overflow: hidden; margin-bottom: 22px; }
+    .store-card-header-badge { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: rgba(0, 0, 0, 0.25); border-bottom: 1px solid var(--card-border); }
+    .store-brand-mark { font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 800; color: var(--secondary); letter-spacing: 1.5px; }
+
+    .store-card-body { padding: 20px 18px; }
+    .store-user-main-row { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+    .store-avatar-wrapper { position: relative; width: 78px; height: 78px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #11131f; flex-shrink: 0; }
+    .store-avatar-crop { width: 66px; height: 66px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; z-index: 2; background: #000; }
+    .store-avatar-img { width: 100%; height: 100%; object-fit: cover; }
+    .store-shape-frame { position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px; border-radius: 50%; pointer-events: none; z-index: 3; }
+
+    .store-display-name { font-size: 18px; font-weight: 900; color: #fff; display: flex; align-items: center; gap: 6px; }
+    .profile-title-badges { display: inline-flex; align-items: center; gap: 5px; }
+    .badge-ico-vip { color: var(--gold); font-size: 15px; }
+    .badge-ico-dev { color: var(--secondary); font-size: 15px; }
+    .badge-is-you { font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: rgba(0, 229, 255, 0.15); border: 1px solid var(--secondary); color: var(--secondary); }
+
+    .store-username-handle { font-size: 12px; color: var(--secondary); font-weight: 700; margin: 2px 0 6px; }
+    .store-status-pill { display: inline-flex; align-items: center; gap: 6px; background: rgba(0, 0, 0, 0.35); border: 1px solid var(--card-border); border-radius: 12px; padding: 4px 10px; font-size: 11px; color: var(--text-dim); }
+
+    .store-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: rgba(0, 0, 0, 0.25); border: 1px solid var(--card-border); border-radius: 16px; padding: 12px 14px; margin-bottom: 16px; }
+    .store-stat-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; font-weight: 700; }
+    .store-stat-val { font-size: 13px; font-weight: 800; color: var(--gold); margin-top: 2px; }
+
+    .btn-store-action-row { display: flex; gap: 10px; }
+    .btn-store-edit { flex: 1; padding: 12px; background: linear-gradient(135deg, var(--secondary), #0077b6); color: #000; font-weight: 800; font-size: 12px; border: none; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-store-shop-border { flex: 1; padding: 12px; background: linear-gradient(135deg, var(--gold), #ff8c00); color: #000; font-weight: 800; font-size: 12px; border: none; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-store-message { flex: 1; padding: 12px; background: linear-gradient(135deg, var(--primary), #b3003b); color: #fff; font-weight: 800; font-size: 12px; border: none; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+    .shop-catalog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+    .shop-border-card { background: #18191c; border-radius: 16px; padding: 14px 12px; border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .shop-border-avatar-preview { width: 68px; height: 68px; border-radius: 50%; margin: 10px 0 12px; display: flex; align-items: center; justify-content: center; background: #2b2d31; position: relative; }
+    .shop-buy-btn { width: 100%; padding: 8px 10px; border-radius: 8px; background: linear-gradient(135deg, var(--gold), #ff8c00); color: #000; font-weight: 800; font-size: 11px; border: none; cursor: pointer; margin-top: 8px; }
+    .shop-owned-btn { width: 100%; padding: 8px 10px; border-radius: 8px; background: rgba(0, 245, 160, 0.15); border: 1px solid var(--success); color: var(--success); font-weight: 800; font-size: 11px; margin-top: 8px; }
+
+    .inbox-user-card { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; margin-bottom: 10px; cursor: pointer; }
+    .chat-container-view { display: flex; flex-direction: column; height: calc(100vh - 130px); }
+    .chat-messages-box { flex: 1; overflow-y: auto; padding: 10px 4px; display: flex; flex-direction: column; gap: 10px; }
+    .chat-bubble { max-width: 78%; padding: 10px 14px; border-radius: 16px; font-size: 12.5px; line-height: 1.4; word-break: break-word; }
+    .chat-bubble.outgoing { align-self: flex-end; background: linear-gradient(135deg, var(--primary), #b3003b); color: #fff; }
+    .chat-bubble.incoming { align-self: flex-start; background: rgba(255,255,255,0.08); border: 1px solid var(--card-border); color: var(--text-white); }
+    .chat-bubble-time { font-size: 9px; color: rgba(255,255,255,0.6); margin-top: 4px; text-align: right; }
+    .chat-bottom-input-bar { display: flex; gap: 8px; padding-top: 10px; border-top: 1px solid var(--card-border); }
+
+    /* PRESET/XML FEED STYLES */
+    .preset-card {
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 18px; margin-bottom: 16px; overflow: hidden;
+    }
+    .preset-header {
+      display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--card-border);
+    }
+    .preset-media-box { width: 100%; aspect-ratio: 16 / 9; background: #000; position: relative; display: flex; align-items: center; justify-content: center; }
+    .preset-media-box img, .preset-media-box video { width: 100%; height: 100%; object-fit: cover; }
+    .preset-body { padding: 14px; }
+    .preset-actions-row { display: flex; align-items: center; gap: 16px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--card-border); }
+    .preset-action-btn { background: none; border: none; color: var(--text-dim); font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+    .preset-action-btn i { font-size: 15px; }
+    .preset-action-btn.liked { color: var(--primary); }
+
+    .setting-group-title { font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin: 18px 0 8px; }
+    .setting-list { display: flex; flex-direction: column; background: var(--card-bg); border-radius: 16px; border: 1px solid var(--card-border); overflow: hidden; }
+    .setting-item { display: flex; align-items: center; padding: 15px 16px; gap: 14px; cursor: pointer; border-bottom: 1px solid var(--card-border); color: var(--text-white); }
+    .setting-icon { font-size: 19px; color: var(--text-dim); width: 26px; text-align: center; }
+    .setting-texts { flex: 1; }
+    .setting-title { font-size: 14px; font-weight: 600; line-height: 1.3; }
+    .setting-subtitle { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(120, 130, 150, 0.4); transition: .3s; border-radius: 24px; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--secondary); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    .subpage-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+    .btn-back { background: none; border: none; color: var(--text-white); font-size: 18px; cursor: pointer; padding: 6px; }
+
+    .border-grid-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-height: 260px; overflow-y: auto; padding: 10px 4px; margin-top: 8px; border: 1px solid var(--card-border); border-radius: 12px; background: rgba(0,0,0,0.25); }
+    .border-item-choice { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 4px; border-radius: 10px; background: var(--input-bg); cursor: pointer; border: 2px solid transparent; }
+    .border-item-choice.selected { border-color: var(--secondary) !important; }
+    .border-preview-circle { width: 42px; height: 42px; border-radius: 50%; background: #222; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #fff; position: relative; }
+
+    .admin-gate-card { background: linear-gradient(145deg, rgba(28, 14, 45, 0.85), rgba(12, 14, 25, 0.95)); border-radius: 24px; padding: 32px 24px; text-align: center; }
+    .key-input-lux { width: 100%; padding: 14px 46px 14px 18px; background: rgba(8, 10, 16, 0.95); border: 1.5px solid rgba(0, 229, 255, 0.3); border-radius: 14px; color: #00e5ff; font-family: 'Orbitron', monospace; font-size: 14px; text-align: center; outline: none; }
+    .btn-toggle-eye { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-dim); cursor: pointer; }
+    .btn-key-unlock { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--primary), #88002a); color: #fff; font-weight: 800; border: none; border-radius: 14px; cursor: pointer; }
+
+    .stat-box-cyber { background: linear-gradient(145deg, rgba(20, 24, 42, 0.9), rgba(10, 12, 22, 0.98)); border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 18px; padding: 16px 14px; }
+    .stat-val-cyber { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 900; margin-top: 6px; }
+
+    .lux-modal-dialog { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 3, 6, 0.85); backdrop-filter: blur(12px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+    .lux-modal-box { width: 100%; max-width: 360px; background: #11131f; border-radius: 22px; padding: 26px 20px; text-align: center; position: relative; }
+
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(4, 5, 8, 0.88); backdrop-filter: blur(8px); z-index: 100; justify-content: center; align-items: flex-end; }
+    .modal-sheet { width: 100%; max-width: 480px; background: var(--card-bg); border-top: 2px solid var(--secondary); border-radius: 26px 26px 0 0; padding: 24px 20px; max-height: 90vh; overflow-y: auto; }
+    .qris-frame { background: #fff; border-radius: 16px; padding: 14px; text-align: center; margin: 15px 0; }
+    .qris-frame img { max-width: 100%; height: 230px; object-fit: contain; }
+  </style>
+</head>
+<body>
+
+<div id="luxurySplashScreen">
+  <div class="splash-glow-ring">
+    <img src="https://cdn.phototourl.com/member/2026-08-27-5b41a41c-b768-49cc-931b-92a2f9b3bc9b.jpg" class="splash-logo-img" alt="Piro Logo">
+  </div>
+  <div class="splash-title">PIROSTORE</div>
+  <div class="splash-sub">Luxury Digital Ecosystem</div>
+  <div class="splash-progress-track">
+    <div id="splashProgressBar" class="splash-progress-bar"></div>
+  </div>
+  <div id="splashPercentText" class="splash-percent-txt">SYSTEM READY 0%</div>
+</div>
+
+<div id="globalMaintenanceOverlay">
+  <div class="maint-laser-icon"><i class="fa-solid fa-wrench"></i></div>
+  <h2 style="font-family:'Orbitron', sans-serif; font-size: 20px; color: var(--danger); margin-bottom: 8px;">PEMELIHARAAN SISTEM</h2>
+  <div id="maintDisplayMessage" style="font-size: 13px; color: var(--text-dim); line-height: 1.6; max-width: 360px; background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); padding: 16px; border-radius: 14px;">
+    Aplikasi sedang dalam proses perbaikan server dan maintenance berkala.
+  </div>
+</div>
+
+<div class="app-viewport">
+
+  <div id="auth-screen">
+    <div class="brand-logo-container">
+      <img src="https://cdn.phototourl.com/member/2026-08-27-5b41a41c-b768-49cc-931b-92a2f9b3bc9b.jpg" alt="Logo Pirostore" class="brand-logo" />
+    </div>
+    <h1 class="brand-title">PIROSTORE</h1>
+    <p class="brand-tagline">Official Digital Services</p>
+
+    <div class="auth-tab-switch">
+      <div class="auth-tab-btn active" onclick="setAuthMode('login')">Masuk</div>
+      <div class="auth-tab-btn" onclick="setAuthMode('register')">Daftar Akun</div>
+    </div>
+
+    <div id="g_id_onload" data-client_id="891259431613-jn8rlebsu0prgdq6gu3ve16i4kd8h25i.apps.googleusercontent.com" data-callback="handleGoogleNativeCredential" data-auto_prompt="false"></div>
+
+    <button type="button" class="btn-google-real" onclick="connectGoogleAccount()">
+      <svg width="20" height="20" viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Masuk dengan Google
+    </button>
+
+    <form id="auth-form-login" onsubmit="processLogin(event)" style="width: 100%;">
+      <div class="input-field">
+        <label>Email / Nomor / Username</label>
+        <input type="text" id="log-account" placeholder="contoh@gmail.com / @username" required />
+      </div>
+      <div class="input-field">
+        <label>Kata Sandi</label>
+        <input type="password" id="log-password" required placeholder="••••••••" />
+      </div>
+      <button type="submit" class="btn-lux-primary"><i class="fa-solid fa-arrow-right-to-bracket"></i> Masuk ke Pirostore</button>
+    </form>
+
+    <form id="auth-form-reg" onsubmit="processRegister(event)" style="width: 100%; display: none;">
+      <div class="input-field"><label>Display Name</label><input type="text" id="reg-name" placeholder="Pyni Wangyy" required /></div>
+      <div class="input-field"><label>Username</label><input type="text" id="reg-username" placeholder="@pyniwangyy" required /></div>
+      <div class="input-field"><label>Email</label><input type="email" id="reg-account" placeholder="nama@gmail.com" required /></div>
+      <div class="input-field"><label>Nomor WhatsApp</label><input type="tel" id="reg-phone" placeholder="08xxxxxxxxxx" required /></div>
+      <div class="input-field"><label>Kata Sandi</label><input type="password" id="reg-password" required placeholder="••••••••" /></div>
+      <button type="submit" class="btn-lux-primary" style="background: linear-gradient(135deg, var(--primary), #b3003b); color: #fff;"><i class="fa-solid fa-user-plus"></i> Daftar Akun Baru</button>
+    </form>
+  </div>
+
+  <div id="main-app">
+    <div class="top-lux-header">
+      <div class="brand-header-mini">
+        <i class="fa-solid fa-bolt" style="color:var(--secondary);"></i>
+        <span>PIROSTORE</span>
+      </div>
+      <button id="topBtnVipInfo" class="header-btn-vip-info" onclick="showVipInfoModal()"><i class="fa-solid fa-crown"></i> Info Langganan</button>
+    </div>
+
+    <div id="page-home" class="page-view active">
+      <div class="hero-banner">
+        <span class="role-badge-pill role-vip" style="margin-bottom: 8px;">PROMO SPESIAL</span>
+        <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 4px;">Pirostore Official ✨</h2>
+        <p style="font-size: 12px; color: var(--text-dim); line-height: 1.4;">Layanan Akun Premium, Suntik Like TikTok, & Diamond MLBB termurah & aman terpercaya!</p>
+      </div>
+      <div class="section-headline"><i class="fa-solid fa-fire" style="color: var(--primary);"></i> Katalog Produk Pirostore</div>
+      <div id="productsContainer"></div>
+    </div>
+
+    <div id="page-services" class="page-view">
+      <div class="section-headline"><i class="fa-solid fa-tags" style="color: var(--secondary);"></i> Daftar Harga Lengkap</div>
+      <div id="priceListContainer"></div>
+    </div>
+
+    <div id="page-vip" class="page-view">
+      <div class="section-headline"><i class="fa-solid fa-crown" style="color: var(--gold);"></i> Membership VIP</div>
+      <div class="vip-benefit-showcase">
+        <h4 style="font-size: 14px; font-weight: 800; color: var(--gold);"><i class="fa-solid fa-wand-magic-sparkles"></i> Manfaat Eksklusif Fitur VIP</h4>
+        <ul class="vip-benefit-list">
+          <li><i class="fa-solid fa-circle-check"></i> <span><b>Diskon 50%</b> untuk semua transaksi produk pilihan</span></li>
+          <li><i class="fa-solid fa-circle-check"></i> <span><b>Border Avatar Bentuk Luxury (80 Varian)</b></span></li>
+          <li><i class="fa-solid fa-circle-check"></i> <span><b>Kustomisasi Profil</b> ubah foto, display name, & username</span></li>
+        </ul>
+      </div>
+      <div class="vip-card-plan">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <h4 style="font-size: 14px; font-weight: 800; color: var(--gold);">VIP Mingguan</h4>
+          <b style="font-size: 15px;" id="vipPriceWeekly">Rp 5.000</b>
+        </div>
+        <button class="lux-order-btn" style="background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000;" onclick="orderVipPlan('VIP Mingguan (7 Hari)', 'Rp 5.000')"><i class="fa-solid fa-crown"></i> Beli VIP Mingguan</button>
+      </div>
+      <div class="vip-card-plan highlight">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <h4 style="font-size: 15px; font-weight: 800; color: var(--gold);">VIP Selamanya (Lifetime)</h4>
+          <b style="color: var(--gold); font-size: 16px;" id="vipPriceLifetime">Rp 35.000</b>
+        </div>
+        <button class="lux-order-btn" style="background: linear-gradient(135deg, var(--gold), #ff0055); color: #fff;" onclick="orderVipPlan('VIP Selamanya (Lifetime)', 'Rp 35.000')"><i class="fa-solid fa-bolt"></i> Beli VIP Selamanya</button>
+      </div>
+    </div>
+
+    <div id="page-tracking" class="page-view">
+      <div class="section-headline"><i class="fa-solid fa-magnifying-glass" style="color: var(--secondary);"></i> Cari Profil & Cek User</div>
+      
+      <div id="userSearchLandingView">
+        <div class="glass-box" style="padding: 18px; margin-bottom: 15px;">
+          <div class="input-field">
+            <label>Cari Display Name / Username</label>
+            <input type="text" id="userSearchInput" placeholder="Contoh: Pyni Wangyy / @pyniwangyy" oninput="liveSearchUsersList(this.value)" />
+          </div>
+        </div>
+        <div id="userSearchListContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
+      </div>
+
+      <div id="userSearchResultCard" style="display: none;">
+        <div class="subpage-header" style="margin-bottom: 12px;">
+          <button class="btn-back" onclick="backToSearchLanding()"><i class="fa-solid fa-arrow-left"></i> Kembali ke Pencarian</button>
+        </div>
+        <div class="store-profile-card">
+          <div class="store-card-header-badge">
+            <div class="store-brand-mark"><i class="fa-solid fa-gem"></i> USER DETAIL CARD</div>
+            <div id="searchResultRolesList" style="display:flex; gap:4px;"></div>
+          </div>
+          <div class="store-card-body">
+            <div class="store-user-main-row">
+              <div class="store-avatar-wrapper">
+                <div class="store-avatar-crop">
+                  <img id="searchResultAvatar" class="store-avatar-img" src="" />
+                </div>
+                <div id="searchResultShapeFrame" class="store-shape-frame"></div>
+              </div>
+              <div class="store-user-details">
+                <div class="store-display-name">
+                  <span id="searchResultName">Display Name</span>
+                  <div class="profile-title-badges" id="searchResultBadges"></div>
+                </div>
+                <div class="store-username-handle" id="searchResultEmail">@username</div>
+                <div class="store-status-pill"><span id="searchResultStatus">Customer Official</span></div>
+              </div>
+            </div>
+            <div class="store-stats-grid">
+              <div class="store-stat-item"><span class="store-stat-label">Poin Belanja</span><span class="store-stat-val" id="searchResultPointsVal">0 Poin</span></div>
+              <div class="store-stat-item"><span class="store-stat-label">Pengunjung</span><span class="store-stat-val" id="searchResultVisitorsCount">0 Dilihat</span></div>
+            </div>
+            <div id="searchActionButtonsRow" class="btn-store-action-row"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="page-inbox" class="page-view">
+      <div class="section-headline"><i class="fa-solid fa-envelope-open-text" style="color: var(--secondary);"></i> Kotak Masuk Pesan</div>
+      <div id="inboxConversationsList"></div>
+    </div>
+
+    <div id="page-videos" class="page-view" style="padding: 10px 14px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <div class="section-headline" style="margin: 0;"><i class="fa-solid fa-clapperboard" style="color: var(--secondary);"></i> Short Preset & XML</div>
+        <button class="btn-lux-primary" style="width: auto; padding: 8px 14px; font-size: 11px;" onclick="openSubPage('subpage-upload-preset')">
+          <i class="fa-solid fa-cloud-arrow-up"></i> Upload
+        </button>
+      </div>
+      <div id="presetFeedContainer"></div>
+    </div>
+
+    <div id="page-market" class="page-view">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="section-headline"><i class="fa-solid fa-store" style="color: var(--gold);"></i> Pasar Komunitas</div>
+        <button class="btn-lux-primary" style="width:auto; padding:8px 14px; font-size:11px;" onclick="openSubPage('subpage-upload-store')"><i class="fa-solid fa-plus-circle"></i> Jual Produk</button>
+      </div>
+      <div id="communityMarketplaceGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px;"></div>
+    </div>
+
+    <div id="page-history" class="page-view">
+      <div class="section-headline"><i class="fa-solid fa-clock-rotate-left" style="color: var(--gold);"></i> Riwayat Pembelian Anda</div>
+      <div id="userHistoryContainer" style="display: flex; flex-direction: column; gap: 10px;"></div>
+    </div>
+
+    <div id="page-profile" class="page-view">
+      <div class="store-profile-card">
+        <div class="store-card-header-badge">
+          <div class="store-brand-mark"><i class="fa-solid fa-crown" style="color:var(--gold);"></i> PIROSTORE VIP MEMBER CARD</div>
+          <div id="profileMultiRolePills" style="display:flex; gap:4px;"></div>
+        </div>
+        <div class="store-card-body">
+          <div class="store-user-main-row">
+            <div class="store-avatar-wrapper">
+              <div class="store-avatar-crop">
+                <img id="profile-avatar-big" class="store-avatar-img" src="" />
+              </div>
+              <div id="profileAvatarShapeFrame" class="store-shape-frame"></div>
+            </div>
+            <div class="store-user-details">
+              <div class="store-display-name">
+                <span id="profile-name-big">New user</span>
+                <div class="profile-title-badges" id="profileTitleBadges"></div>
+              </div>
+              <div class="store-username-handle" id="profile-email-big">@user12345</div>
+              <div class="store-status-pill"><span id="profileCustomStatus">Customer Official</span></div>
+            </div>
+          </div>
+          <div class="btn-store-action-row">
+            <button class="btn-store-edit" onclick="openEditProfilePage()"><i class="fa-solid fa-pen-to-square"></i> Edit Profil</button>
+            <button class="btn-store-shop-border" onclick="openSubPage('subpage-border-shop')"><i class="fa-solid fa-store"></i> Shop Border</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-group-title">Menu Pengelola Preset (Khusus Pengunggah/Developer)</div>
+      <div class="setting-list">
+        <div class="setting-item" onclick="openSubPage('subpage-manage-presets')">
+          <i class="fa-solid fa-sliders setting-icon" style="color: var(--secondary);"></i>
+          <div class="setting-texts">
+            <div class="setting-title">Kelola & Pantau Preset Saya</div>
+            <div class="setting-subtitle">Lihat yang like, nonton, komen, & balas komentar</div>
+          </div>
+          <i class="fa-solid fa-chevron-right" style="color:var(--text-dim); font-size:12px;"></i>
+        </div>
+      </div>
+
+      <div class="setting-group-title">Preferensi & Bantuan</div>
+      <div class="setting-list">
+        <div class="setting-item">
+          <i class="fa-solid fa-moon setting-icon" id="theme-icon"></i>
+          <div class="setting-texts">
+            <div class="setting-title">Mode Gelap / Terang</div>
+            <div class="setting-subtitle" id="theme-status-text">Saat ini aktif: Mode Gelap</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="themeToggle" onchange="toggleAppTheme()">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <button onclick="logoutApp()" class="btn-lux-primary" style="margin-top: 24px; background: rgba(255,0,85,0.15); color: var(--primary); border: 1px solid var(--primary);">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar dari Akun
+      </button>
+    </div>
+
+    <div id="page-admin" class="page-view">
+      <div id="adminKeyAuthBox" class="admin-gate-card">
+        <h3 style="font-family:'Orbitron',sans-serif; color:var(--primary); margin-bottom:10px;">PORTAL PENGEMBANG</h3>
+        <div class="key-input-wrapper" style="margin:10px 0; position:relative;">
+          <input type="password" id="adminSecretKeyInput" class="key-input-lux" placeholder="•••••••••••••" />
+          <button type="button" class="btn-toggle-eye" onclick="toggleKeyVisibility()"><i class="fa-solid fa-eye" id="eyeKeyIcon"></i></button>
+        </div>
+        <button class="btn-key-unlock" onclick="verifyAdminKey()"><i class="fa-solid fa-key"></i> BUKA PANEL</button>
+      </div>
+      <div id="adminDashboardView" style="display: none;">
+        <h3 style="font-family:'Orbitron',sans-serif; color:var(--secondary); margin-bottom:14px;">PIRO CENTRAL DASHBOARD</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:15px;">
+          <div class="stat-box-cyber"><div style="font-size:10px; color:var(--text-dim);">Total Pengguna</div><div class="stat-val-cyber" id="statTotalUsers">0</div></div>
+          <div class="stat-box-cyber"><div style="font-size:10px; color:var(--text-dim);">VIP Members</div><div class="stat-val-cyber" style="color:var(--gold);" id="statTotalVip">0</div></div>
+        </div>
+        <button onclick="lockAdminPanel()" class="btn-lux-primary" style="background:rgba(255,255,255,0.08); color:#fff; border:1px solid var(--card-border);">Kunci Kembali</button>
+      </div>
+    </div>
+
+    <div id="subpage-upload-preset" class="page-view">
+      <div class="subpage-header">
+        <button class="btn-back" onclick="switchPage('page-videos', document.querySelectorAll('.nav-tab-item')[5])"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3 style="font-size: 16px; font-weight: 700;">Upload Preset / XML</h3>
+      </div>
+      <div class="glass-box" style="padding: 18px;">
+        <form id="formUploadPreset" onsubmit="handleUploadPreset(event)">
+          <div class="input-field"><label>Judul Preset</label><input type="text" id="presetTitleInput" placeholder="Contoh: Preset Alight Motion Jedag Jedug" required /></div>
+          <div class="input-field"><label>Link Preset / XML</label><input type="url" id="presetLinkInput" placeholder="https://drive.google.com/..." required /></div>
+          <div class="input-field"><label>Caption</label><textarea id="presetCaptionInput" rows="3" placeholder="Tulis caption atau penjelasan preset..." required></textarea></div>
+          <div class="input-field"><label>Foto / Video Pratinjau</label><input type="file" id="presetFileInput" accept="image/*,video/*" required onchange="previewPresetMedia(event)" /></div>
+          <div id="presetMediaPreviewWrap" style="display:none; text-align:center; margin-bottom:14px;">
+            <img id="presetMediaPreviewImg" src="" style="max-height:140px; border-radius:10px;" />
+          </div>
+          <button type="submit" class="btn-lux-primary"><i class="fa-solid fa-cloud-arrow-up"></i> Publikasikan Preset</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="subpage-manage-presets" class="page-view">
+      <div class="subpage-header">
+        <button class="btn-back" onclick="backToProfile()"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3 style="font-size: 16px; font-weight: 700;">Kelola Preset Saya</h3>
+      </div>
+      <div id="myManagedPresetsContainer"></div>
+    </div>
+
+    <div id="subpage-manage-preset-detail" class="page-view">
+      <div class="subpage-header">
+        <button class="btn-back" onclick="openSubPage('subpage-manage-presets')"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3 style="font-size: 16px; font-weight: 700;">Statistik & Komentar Preset</h3>
+      </div>
+      <div id="presetDetailAnalyticsBox" style="margin-bottom: 16px;"></div>
+      <div class="section-headline" style="font-size:13px;">Daftar Komentar & Balasan</div>
+      <div id="presetCommentsManageList" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+
+    <div id="subpage-chat-room" class="page-view">
+      <div class="subpage-header" style="margin-bottom:12px;">
+        <button class="btn-back" onclick="switchPage('page-inbox', document.querySelectorAll('.nav-tab-item')[4])"><i class="fa-solid fa-arrow-left"></i></button>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <img id="chatHeaderAvatar" src="" style="width:34px; height:34px; border-radius:50%; object-fit:cover;" />
+          <div>
+            <div id="chatHeaderName" style="font-size:13px; font-weight:800;">Chat User</div>
+            <div id="chatHeaderHandle" style="font-size:10px; color:var(--secondary);">@user</div>
+          </div>
+        </div>
+      </div>
+      <div class="chat-container-view">
+        <div class="chat-messages-box" id="chatMessagesContainer"></div>
+        <div class="chat-bottom-input-bar">
+          <input type="text" id="chatMsgInput" placeholder="Ketik pesan..." style="flex:1; padding:12px; border-radius:12px; background:var(--input-bg); border:1px solid var(--card-border); color:#fff; font-size:13px;" onkeypress="if(event.key==='Enter') sendChatMessage()" />
+          <button class="btn-lux-primary" style="width:auto; padding:0 18px;" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <div id="subpage-upload-store" class="page-view">
+      <div class="subpage-header">
+        <button class="btn-back" onclick="switchPage('page-market', document.querySelectorAll('.nav-tab-item')[6])"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3 style="font-size: 16px; font-weight: 700;">Upload Produk Jualan</h3>
+      </div>
+      <div class="glass-box" style="padding: 18px;">
+        <form id="formUploadProduct" onsubmit="handleUploadProduct(event)">
+          <div class="input-field"><label>Nama Produk</label><input type="text" id="prodTitleInput" placeholder="Akun FF Sultan" required /></div>
+          <div class="input-field"><label>Harga</label><input type="text" id="prodPriceInput" placeholder="Rp 25.000" required /></div>
+          <div class="input-field"><label>Nomor WhatsApp</label><input type="tel" id="prodWaInput" placeholder="08xxxxxxxxxx" required /></div>
+          <div class="input-field"><label>Email Penjual</label><input type="email" id="prodEmailInput" placeholder="nama@gmail.com" required /></div>
+          <div class="input-field"><label>Deskripsi</label><textarea id="prodDescInput" rows="3" placeholder="Detail produk..."></textarea></div>
+          <div class="input-field"><label>Foto Produk</label><input type="file" id="prodFileInput" accept="image/*" required onchange="previewUploadImage(event)" /></div>
+          <div id="prodImagePreviewWrap" style="display:none; text-align:center; margin-bottom:14px;"><img id="prodImagePreviewImg" src="" style="width:100px; height:100px; object-fit:cover; border-radius:12px;" /></div>
+          <button type="submit" class="btn-lux-primary">Publikasikan</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="subpage-border-shop" class="page-view">
+      <div class="subpage-header">
+        <button class="btn-back" onclick="backToProfile()"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3 style="font-size: 16px; font-weight: 700;">Shop Border Avatar</h3>
+      </div>
+      <div class="shop-catalog-grid" id="shopBorderCatalog"></div>
+    </div>
+
+    <div id="subpage-edit-profile" class="page-view">
+      <div class="subpage-header">
+        <button class="btn-back" onclick="backToProfile()"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3 style="font-size: 16px; font-weight: 700;">Edit Profil</h3>
+      </div>
+      <div class="glass-box" style="padding: 20px;">
+        <div style="text-align: center; margin-bottom: 16px;">
+          <div class="store-avatar-wrapper" style="margin: 0 auto; width:86px; height:86px;">
+            <div class="store-avatar-crop" style="width:74px; height:74px;"><img id="editAvatarPreviewImg" class="store-avatar-img" src="" /></div>
+            <div id="editAvatarShapeFrame" class="store-shape-frame"></div>
+          </div>
+          <label class="btn-lux-primary" style="display:inline-block; width:auto; padding:8px 14px; font-size:11px; margin-top:10px; cursor:pointer;">
+            Ganti Foto<input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="handleAvatarUpload(event)">
+          </label>
+        </div>
+        <div class="input-field"><label>Display Name</label><input type="text" id="editDisplayNameInput" /></div>
+        <div class="input-field"><label>Username</label><input type="text" id="editUsernameInput" /></div>
+        <div class="input-field"><label>Status Custom</label><input type="text" id="editStatusInput" /></div>
+        <div class="input-field"><label>Border Avatar</label><div class="border-grid-container" id="borderChoiceGrid"></div></div>
+        <button class="btn-lux-primary" onclick="saveUserProfileChanges()">Simpan Perubahan</button>
+      </div>
+    </div>
+
+    <div class="bottom-navbar">
+      <div class="nav-tab-item active" onclick="switchPage('page-home', this)"><i class="fa-solid fa-house"></i><span>Beranda</span></div>
+      <div class="nav-tab-item" onclick="switchPage('page-services', this)"><i class="fa-solid fa-tags"></i><span>Harga</span></div>
+      <div class="nav-tab-item" onclick="switchPage('page-vip', this)"><i class="fa-solid fa-crown" style="color:var(--gold);"></i><span>VIP</span></div>
+      <div class="nav-tab-item" onclick="switchPage('page-tracking', this)"><i class="fa-solid fa-magnifying-glass"></i><span>Cari User</span></div>
+      <div class="nav-tab-item" onclick="switchPage('page-inbox', this)"><i class="fa-solid fa-comments"></i><span>Inbox</span></div>
+      <div class="nav-tab-item" onclick="switchPage('page-videos', this)"><i class="fa-solid fa-clapperboard"></i><span>Preset</span></div>
+      <div class="nav-tab-item" onclick="switchPage('page-market', this)"><i class="fa-solid fa-store"></i><span>Pasar</span></div>
+      <div class="nav-tab-item" onclick="switchPage('page-history', this)"><i class="fa-solid fa-clock-rotate-left"></i><span>Riwayat</span></div>
+      <div class="nav-tab-item" onclick="switchPage('page-profile', this)"><i class="fa-solid fa-user"></i><span>Profil</span></div>
+    </div>
+  </div>
+
+  <div class="lux-modal-dialog" id="luxCustomAlertModal">
+    <div class="lux-modal-box" id="luxModalBoxInner">
+      <div style="font-size: 28px; margin-bottom: 10px;" id="luxModalIcon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <h3 id="luxModalTitle" style="font-size: 17px; font-weight: 800; margin-bottom: 6px;">Perhatian!</h3>
+      <p id="luxModalMessage" style="font-size: 12px; color: var(--text-dim); margin-bottom: 20px;">Pesan...</p>
+      <button class="btn-lux-primary" onclick="closeLuxAlert()">Mengerti</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="checkoutModal">
+    <div class="modal-sheet">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 id="modalTitle" style="font-size: 16px; font-weight: 800;">Form Pemesanan</h3>
+        <button onclick="closeOrderModal()" style="background:none; border:none; color:#fff; font-size:22px; cursor:pointer;">&times;</button>
+      </div>
+      <div class="input-field" id="packageSelectField"><label>Pilih Paket</label><select id="modalPackageSelect"></select></div>
+      <div class="input-field" id="generalInputGroup"><label id="generalInputLabel">Target / Data</label><input type="text" id="generalInput" /></div>
+      <div class="qris-frame">
+        <img src="https://cdn.phototourl.com/member/2026-08-27-602c4257-f0ad-405d-8c33-e61c9c801464.jpg" alt="QRIS" />
+        <p style="color: #222; font-size: 11px; font-weight: 800; margin-top: 6px;">QRIS RESMI PIROSTORE</p>
+      </div>
+      <button class="btn-lux-primary" onclick="confirmOrderWhatsApp()" style="background: #25d366; color: #fff;"><i class="fa-brands fa-whatsapp"></i> Konfirmasi Pesanan</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyD3v3avQGZn6LpSfXft9sgNcOcroNeTN1A",
+    authDomain: "pirostore-db.firebaseapp.com",
+    databaseURL: "https://pirostore-db-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "pirostore-db",
+    storageBucket: "pirostore-db.firebasestorage.app",
+    messagingSenderId: "914886420309",
+    appId: "1:914886420309:web:51204859f14b2a6a0e31dc",
+    measurementId: "G-8FSV9CJWNY"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const GOOGLE_CLIENT_ID = "891259431613-jn8rlebsu0prgdq6gu3ve16i4kd8h25i.apps.googleusercontent.com";
+
+  const borderPresets = [
+    { id: 'b-0', name: 'Hellflame Aura', price: 'Rp 6.000', style: 'border: 3.5px dashed #ff0055; box-shadow: 0 0 20px #ff0055;' },
+    { id: 'b-1', name: 'Lord Hades Cyan', price: 'Rp 8.000', style: 'border: 4px double #00e5ff; box-shadow: 0 0 25px #00e5ff;' }
+  ];
+
+  const defaultCatalogDB = {
+    AM_PREMIUM: {
+      name: "AM PREMIUM", type: "GENERAL", img: "https://cdn.phototourl.com/member/2026-08-27-8cf0e5af-13e7-46af-bf8a-f635ded2bc81.jpg", badge: "Stok Gene: 88 | 1-24 Jam", notes: "• Email fresh 🍃", packages: [{ label: "1thn", price: "Rp 1.000" }]
+    }
+  };
+
+  let catalogDB = defaultCatalogDB;
+  let activeUser = null;
+  let globalCloudUsers = [];
+  let communityPresets = [];
+  let tempAvatarBase64 = null;
+  let tempPresetMediaBase64 = null;
+  let selectedBorderIndex = null;
+  let currentActiveChatUser = null;
+  let currentManagingPresetId = null;
+
+  function sanitizeKey(email) { return (email || 'unknown').replace(/[.#$[\]]/g, '_').toLowerCase(); }
+
+  function startLuxuryLoadingAnimation(cb) {
+    const splash = document.getElementById('luxurySplashScreen');
+    const bar = document.getElementById('splashProgressBar');
+    const txt = document.getElementById('splashPercentText');
+    if (!splash) { if (cb) cb(); return; }
+    let p = 0;
+    const interval = setInterval(() => {
+      p += 5;
+      if (bar) bar.style.width = p + '%';
+      if (txt) txt.innerText = 'INITIALIZING ' + p + '%';
+      if (p >= 100) {
+        clearInterval(interval);
+        setTimeout(() => { splash.style.opacity = '0'; setTimeout(() => { splash.style.display = 'none'; if (cb) cb(); }, 400); }, 150);
+      }
+    }, 30);
+  }
+
+  // LISTENERS FIREBASE
+  db.ref('users').on('value', (snap) => {
+    const data = snap.val();
+    globalCloudUsers = data ? Object.keys(data).map(k => data[k]) : [];
+  });
+
+  db.ref('community_presets').on('value', (snap) => {
+    const data = snap.val();
+    communityPresets = [];
+    if (data) {
+      Object.keys(data).forEach(k => {
+        communityPresets.unshift({ id: k, ...data[k] });
+      });
+    }
+    renderPresetFeed();
+    if (activeUser) renderMyManagedPresets();
+  });
+
+  function getRegisteredUsers() {
+    if (globalCloudUsers && globalCloudUsers.length > 0) return globalCloudUsers;
+    return JSON.parse(localStorage.getItem('piro_registered_users') || '[]');
+  }
+
+  function saveRegisteredUser(userObj) {
+    userObj.roles = userObj.roles || ['NEWBIE'];
+    userObj.points = userObj.points || 0;
+    db.ref('users/' + sanitizeKey(userObj.email)).update(userObj);
+  }
+
+  function parseJwt(token) {
+    try {
+      let base64Url = token.split('.')[1];
+      let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      return JSON.parse(decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+    } catch(e) { return null; }
+  }
+
+  function handleGoogleNativeCredential(res) {
+    let email = res.credential ? parseJwt(res.credential).email : "googleuser@gmail.com";
+    let name = res.credential ? parseJwt(res.credential).name : "Google User";
+    let avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=00e5ff&color=000`;
+    
+    let matched = getRegisteredUsers().find(u => u.email.toLowerCase() === email.toLowerCase());
+    if (!matched) {
+      matched = { name, username: "@user" + Math.floor(1000 + Math.random()*9000), email, avatar, roles: ['NEWBIE'], points: 0, customStatus: 'Customer Official' };
+    }
+    saveRegisteredUser(matched);
+    loginSuccess(matched);
+  }
+
+  function connectGoogleAccount() {
+    handleGoogleNativeCredential({ credential: null });
+  }
+
+  function showLuxAlert(title, message, type = "danger") {
+    document.getElementById('luxModalTitle').innerText = title;
+    document.getElementById('luxModalMessage').innerText = message;
+    document.getElementById('luxCustomAlertModal').style.display = 'flex';
+  }
+  function closeLuxAlert() { document.getElementById('luxCustomAlertModal').style.display = 'none'; }
+
+  function getUserRoles(user) { return (user && user.roles) ? user.roles : ['NEWBIE']; }
+  function generateUserBadgesHTML(user) {
+    if (!user) return '';
+    const roles = getUserRoles(user).map(r => r.toUpperCase());
+    let b = '';
+    if (roles.includes('VIP') || roles.includes('OWNER')) b += '<i class="fa-solid fa-crown badge-ico-vip"></i>';
+    if (roles.includes('OWNER') || roles.includes('CEO')) b += '<i class="fa-solid fa-shield-halved badge-ico-dev"></i>';
+    return b;
+  }
+
+  // --- FITUR PRESET / XML FEED & PENGELOLAAN (PENGGANTI VIDEO) ---
+  function previewPresetMedia(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const r = new FileReader();
+    r.onload = function(evt) {
+      tempPresetMediaBase64 = evt.target.result;
+      document.getElementById('presetMediaPreviewImg').src = tempPresetMediaBase64;
+      document.getElementById('presetMediaPreviewWrap').style.display = 'block';
+    };
+    r.readAsDataURL(file);
+  }
+
+  function handleUploadPreset(e) {
+    e.preventDefault();
+    if (!activeUser) return;
+    const title = document.getElementById('presetTitleInput').value.trim();
+    const link = document.getElementById('presetLinkInput').value.trim();
+    const caption = document.getElementById('presetCaptionInput').value.trim();
+
+    if (!title || !link || !tempPresetMediaBase64) {
+      showLuxAlert("Data Belum Lengkap", "Judul, Link, dan Media pratinjau wajib diisi!", "danger");
+      return;
+    }
+
+    const newPreset = {
+      title, link, caption,
+      media: tempPresetMediaBase64,
+      authorEmail: activeUser.email,
+      authorName: activeUser.name,
+      authorUsername: activeUser.username,
+      authorAvatar: activeUser.avatar || '',
+      likesCount: 0,
+      viewsCount: 0,
+      timestamp: Date.now(),
+      likes: {},
+      comments: {}
+    };
+
+    db.ref('community_presets').push(newPreset).then(() => {
+      document.getElementById('formUploadPreset').reset();
+      document.getElementById('presetMediaPreviewWrap').style.display = 'none';
+      switchPage('page-videos', document.querySelectorAll('.nav-tab-item')[5]);
+      showLuxAlert("Preset Dipublikasikan! 🎉", "Preset Anda berhasil diunggah.", "success");
+    });
+  }
+
+  function renderPresetFeed() {
+    const container = document.getElementById('presetFeedContainer');
+    if (!container) return;
+    if (communityPresets.length === 0) {
+      container.innerHTML = '<div style="font-size:12px; color:var(--text-dim); text-align:center; padding:30px;">Belum ada preset yang diunggah.</div>';
+      return;
+    }
+
+    container.innerHTML = communityPresets.map(p => {
+      const isLiked = activeUser && p.likes && p.likes[sanitizeKey(activeUser.email)];
+      const likesCount = p.likesCount || 0;
+      const viewsCount = p.viewsCount || 0;
+      const commentsCount = p.comments ? Object.keys(p.comments).length : 0;
+
+      // Track view otomatis saat dirender
+      incrementPresetView(p.id);
+
+      return `
+        <div class="preset-card">
+          <div class="preset-header">
+            <div style="display:flex; align-items:center; gap:8px;" onclick="openUserProfileDirectly('${p.authorEmail}')">
+              <img src="${p.authorAvatar || 'https://ui-avatars.com/api/?name=User'}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;" />
+              <div>
+                <div style="font-size:12px; font-weight:800; color:#fff;">${p.authorName}</div>
+                <div style="font-size:10px; color:var(--secondary);">${p.authorUsername}</div>
+              </div>
+            </div>
+            <a href="${p.link}" target="_blank" class="btn-lux-primary" style="width:auto; padding:6px 12px; font-size:11px;"><i class="fa-solid fa-download"></i> Ambil Preset</a>
+          </div>
+          <div class="preset-media-box">
+            <img src="${p.media}" />
+          </div>
+          <div class="preset-body">
+            <div style="font-size:13px; font-weight:800; margin-bottom:4px;">${p.title}</div>
+            <div style="font-size:11px; color:var(--text-dim); margin-bottom:8px;">${p.caption}</div>
+            
+            <div class="preset-actions-row">
+              <button class="preset-action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLikePreset('${p.id}')">
+                <i class="fa-solid fa-heart"></i> <span>${likesCount}</span>
+              </button>
+              <button class="preset-action-btn" onclick="openPresetComments('${p.id}')">
+                <i class="fa-solid fa-comment"></i> <span>${commentsCount} Komen</span>
+              </button>
+              <div style="font-size:11px; color:var(--text-dim); margin-left:auto;"><i class="fa-solid fa-eye"></i> ${viewsCount}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function incrementPresetView(presetId) {
+    if (!activeUser) return;
+    const viewKey = sanitizeKey(activeUser.email);
+    db.ref(`community_presets/${presetId}/views/${viewKey}`).transaction(val => {
+      if (!val) {
+        db.ref(`community_presets/${presetId}/viewsCount`).transaction(c => (c || 0) + 1);
+        return true;
+      }
+      return val;
+    });
+  }
+
+  function toggleLikePreset(presetId) {
+    if (!activeUser) return;
+    const userKey = sanitizeKey(activeUser.email);
+    const likeRef = db.ref(`community_presets/${presetId}/likes/${userKey}`);
+    
+    likeRef.once('value', snap => {
+      const isLiked = snap.val();
+      if (isLiked) {
+        likeRef.remove();
+        db.ref(`community_presets/${presetId}/likesCount`).transaction(c => Math.max(0, (c || 1) - 1));
+      } else {
+        likeRef.set(true);
+        db.ref(`community_presets/${presetId}/likesCount`).transaction(c => (c || 0) + 1);
+      }
+    });
+  }
+
+  function openPresetComments(presetId) {
+    currentManagingPresetId = presetId;
+    openSubPage('subpage-manage-preset-detail');
+    loadPresetManageDetail(presetId);
+  }
+
+  function renderMyManagedPresets() {
+    const container = document.getElementById('myManagedPresetsContainer');
+    if (!container || !activeUser) return;
+    const mine = communityPresets.filter(p => p.authorEmail.toLowerCase() === activeUser.email.toLowerCase());
+
+    if (mine.length === 0) {
+      container.innerHTML = '<div style="font-size:12px; color:var(--text-dim); text-align:center; padding:30px;">Anda belum mengunggah preset apapun.</div>';
+      return;
+    }
+
+    container.innerHTML = mine.map(p => `
+      <div class="preset-card" onclick="openPresetComments('${p.id}')" style="cursor:pointer;">
+        <div style="padding:14px; display:flex; gap:12px; align-items:center;">
+          <img src="${p.media}" style="width:60px; height:60px; border-radius:8px; object-fit:cover;" />
+          <div style="flex:1;">
+            <div style="font-size:13px; font-weight:800; color:#fff;">${p.title}</div>
+            <div style="font-size:11px; color:var(--text-dim); margin-top:4px;"><i class="fa-solid fa-heart" style="color:var(--primary);"></i> ${p.likesCount || 0} &nbsp;|&nbsp; <i class="fa-solid fa-eye" style="color:var(--secondary);"></i> ${p.viewsCount || 0} &nbsp;|&nbsp; <i class="fa-solid fa-comment"></i> ${p.comments ? Object.keys(p.comments).length : 0}</div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function loadPresetManageDetail(presetId) {
+    db.ref(`community_presets/${presetId}`).once('value', snap => {
+      const p = snap.val();
+      if (!p) return;
+
+      const likesArr = p.likes ? Object.keys(p.likes) : [];
+      const commentsObj = p.comments || {};
+
+      document.getElementById('presetDetailAnalyticsBox').innerHTML = `
+        <div class="glass-box" style="padding:16px;">
+          <h4 style="font-size:14px; font-weight:800; margin-bottom:10px;">${p.title}</h4>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; text-align:center;">
+            <div class="stat-box-cyber"><div style="font-size:9px; color:var(--text-dim);">Nonton</div><div style="font-size:16px; font-weight:900; color:var(--secondary);">${p.viewsCount || 0}</div></div>
+            <div class="stat-box-cyber"><div style="font-size:9px; color:var(--text-dim);">Like</div><div style="font-size:16px; font-weight:900; color:var(--primary);">${p.likesCount || 0}</div></div>
+            <div class="stat-box-cyber"><div style="font-size:9px; color:var(--text-dim);">Komentar</div><div style="font-size:16px; font-weight:900; color:var(--gold);">${Object.keys(commentsObj).length}</div></div>
+          </div>
+        </div>
+      `;
+
+      const listContainer = document.getElementById('presetCommentsManageList');
+      const keys = Object.keys(commentsObj);
+      if (keys.length === 0) {
+        listContainer.innerHTML = '<div style="font-size:11px; color:var(--text-dim); text-align:center; padding:20px;">Belum ada komentar.</div>';
+        return;
+      }
+
+      listContainer.innerHTML = keys.map(k => {
+        const c = commentsObj[k];
+        let repliesHtml = '';
+        if (c.replies) {
+          Object.keys(c.replies).forEach(rk => {
+            const rep = c.replies[rk];
+            repliesHtml += `<div style="background:rgba(0,229,255,0.05); padding:6px 10px; border-radius:8px; margin-top:6px; font-size:11px;"><b>${rep.authorName}:</b> ${rep.text}</div>`;
+          });
+        }
+
+        return `
+          <div class="glass-box" style="padding:12px;">
+            <div style="display:flex; justify-content:space-between;">
+              <span style="font-size:12px; font-weight:800; color:var(--secondary);">${c.authorName}</span>
+              <span style="font-size:9px; color:var(--text-dim);">${new Date(c.timestamp).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}</span>
+            </div>
+            <div style="font-size:12px; color:#fff; margin:4px 0;">${c.text}</div>
+            ${repliesHtml}
+            <div style="margin-top:8px; display:flex; gap:6px;">
+              <input type="text" id="replyInput_${k}" placeholder="Balas komentar..." style="flex:1; padding:6px 10px; border-radius:8px; background:var(--input-bg); border:1px solid var(--card-border); color:#fff; font-size:11px;" />
+              <button class="btn-lux-primary" style="width:auto; padding:6px 12px; font-size:11px;" onclick="sendPresetReply('${presetId}', '${k}')">Balas</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    });
+  }
+
+  function sendPresetReply(presetId, commentKey) {
+    const input = document.getElementById(`replyInput_${commentKey}`);
+    const text = input.value.trim();
+    if (!text || !activeUser) return;
+
+    db.ref(`community_presets/${presetId}/comments/${commentKey}/replies`).push({
+      authorName: activeUser.name,
+      authorEmail: activeUser.email,
+      text: text,
+      timestamp: Date.now()
+    }).then(() => {
+      input.value = '';
+      loadPresetManageDetail(presetId);
+    });
+  }
+
+  // --- HALAMAN CARI USER / PROFIL (2 TAHAPAN SELESAI) ---
+  function liveSearchUsersList(query) {
+    const container = document.getElementById('userSearchListContainer');
+    const q = (query || '').trim().toLowerCase();
+    localStorage.setItem('piro_last_search_query', query);
+
+    const users = getRegisteredUsers();
+    if (!q) { container.innerHTML = ''; return; }
+
+    const matched = users.filter(u => (u.name && u.name.toLowerCase().includes(q)) || (u.username && u.username.toLowerCase().includes(q)));
+    if (matched.length === 0) {
+      container.innerHTML = '<div style="font-size:12px; color:var(--text-dim); text-align:center; padding:15px;">Pengguna tidak ditemukan.</div>';
+      return;
+    }
+
+    // Halaman 1: Hanya menampilkan PP dan Nama saja, tapi bisa diklik
+    container.innerHTML = matched.map(target => `
+      <div class="inbox-user-card" onclick="openUserProfileDetail('${target.email}')" style="display:flex; align-items:center; gap:12px; cursor:pointer;">
+        <img src="${target.avatar || 'https://ui-avatars.com/api/?name=User'}" style="width:46px; height:46px; border-radius:50%; object-fit:cover;" />
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:13px; font-weight:800; color:#fff; display:flex; align-items:center; gap:4px;">
+            ${target.name} ${generateUserBadgesHTML(target)}
+          </div>
+          <div style="font-size:11px; color:var(--secondary); font-weight:700;">${target.username || '@user'}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function openUserProfileDetail(email) {
+    const users = getRegisteredUsers();
+    const target = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    if (!target) return;
+
+    // Sembunyikan halaman 1, tampilkan halaman 2 (Kartu Profil Lengkap)
+    document.getElementById('userSearchLandingView').style.display = 'none';
+    document.getElementById('userSearchResultCard').style.display = 'block';
+
+    document.getElementById('searchResultName').innerText = target.name || 'New user';
+    document.getElementById('searchResultBadges').innerHTML = generateUserBadgesHTML(target);
+    document.getElementById('searchResultEmail').innerText = target.username || '@user12345';
+    document.getElementById('searchResultStatus').innerText = target.customStatus || 'Customer Official';
+    document.getElementById('searchResultAvatar').src = target.avatar || 'https://ui-avatars.com/api/?name=User';
+    document.getElementById('searchResultPointsVal').innerText = `${target.points || 0} Poin`;
+
+    const isSelf = Boolean(activeUser && activeUser.email.toLowerCase() === target.email.toLowerCase());
+    const btnContainer = document.getElementById('searchActionButtonsRow');
+    if (isSelf) {
+      btnContainer.innerHTML = `<button class="btn-store-edit" onclick="openEditProfilePage()">Edit Profil</button>`;
+    } else {
+      btnContainer.innerHTML = `<button class="btn-store-message" onclick="startDirectChat('${target.email}')"><i class="fa-solid fa-paper-plane"></i> Kirim Pesan</button>`;
+    }
+  }
+
+  function backToSearchLanding() {
+    document.getElementById('userSearchResultCard').style.display = 'none';
+    document.getElementById('userSearchLandingView').style.display = 'block';
+  }
+
+  // CHAT & INBOX SYSTEM
+  function startDirectChat(targetEmail) {
+    const target = globalCloudUsers.find(u => u.email.toLowerCase() === targetEmail.toLowerCase());
+    if (!target) return;
+    currentActiveChatUser = target;
+    document.getElementById('chatHeaderName').innerText = target.name;
+    document.getElementById('chatHeaderHandle').innerText = target.username;
+    document.getElementById('chatHeaderAvatar').src = target.avatar || 'https://ui-avatars.com/api/?name=User';
+
+    openSubPage('subpage-chat-room');
+    loadChatRoomMessages();
+  }
+
+  function getChatRoomId(e1, e2) {
+    const k1 = sanitizeKey(e1), k2 = sanitizeKey(e2);
+    return k1 < k2 ? `${k1}___${k2}` : `${k2}___${k1}`;
+  }
+
+  function loadChatRoomMessages() {
+    if (!activeUser || !currentActiveChatUser) return;
+    const roomId = getChatRoomId(activeUser.email, currentActiveChatUser.email);
+    db.ref(`chat_rooms/${roomId}/messages`).on('value', snap => {
+      const msgs = snap.val() || {};
+      const container = document.getElementById('chatMessagesContainer');
+      container.innerHTML = Object.keys(msgs).map(k => {
+        const m = msgs[k];
+        const isMe = m.senderEmail.toLowerCase() === activeUser.email.toLowerCase();
+        return `<div class="chat-bubble ${isMe ? 'outgoing' : 'incoming'}">${m.text}</div>`;
+      }).join('');
+      container.scrollTop = container.scrollHeight;
+    });
+  }
+
+  function sendChatMessage() {
+    const input = document.getElementById('chatMsgInput');
+    const text = input.value.trim();
+    if (!text || !activeUser || !currentActiveChatUser) return;
+    const roomId = getChatRoomId(activeUser.email, currentActiveChatUser.email);
+    db.ref(`chat_rooms/${roomId}/messages`).push({ senderEmail: activeUser.email, text, timestamp: Date.now() });
+    input.value = '';
+  }
+
+  // PROFIL & PENGATURAN UMUM
+  function updateVipUIState() {
+    if (!activeUser) return;
+    document.getElementById('profile-name-big').innerText = activeUser.name || 'New user';
+    document.getElementById('profile-email-big').innerText = activeUser.username || '@user12345';
+    document.getElementById('profile-avatar-big').src = activeUser.avatar || '';
+    document.getElementById('profileTitleBadges').innerHTML = generateUserBadgesHTML(activeUser);
+  }
+
+  function openSubPage(pageId) {
+    document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function backToProfile() {
+    switchPage('page-profile', document.querySelectorAll('.nav-tab-item')[8]);
+  }
+
+  function switchPage(pageId, element) {
+    document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab-item').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    if (element) element.classList.add('active');
+
+    if (pageId === 'page-tracking') {
+      const savedQuery = localStorage.getItem('piro_last_search_query') || '';
+      document.getElementById('userSearchInput').value = savedQuery;
+      if (savedQuery) liveSearchUsersList(savedQuery);
+    }
+  }
+
+  function toggleAppTheme() {
+    const isLight = document.getElementById('themeToggle').checked;
+    if (isLight) {
+      document.body.classList.add('light-theme');
+      document.getElementById('theme-status-text').innerText = "Saat ini aktif: Mode Terang";
+      localStorage.setItem('piro_theme', 'light');
+    } else {
+      document.body.classList.remove('light-theme');
+      document.getElementById('theme-status-text').innerText = "Saat ini aktif: Mode Gelap";
+      localStorage.setItem('piro_theme', 'dark');
+    }
+  }
+
+  function setAuthMode(mode) {
+    const tabs = document.querySelectorAll('.auth-tab-btn');
+    if(mode === 'login') {
+      tabs[0].classList.add('active'); tabs[1].classList.remove('active');
+      document.getElementById('auth-form-login').style.display = 'block';
+      document.getElementById('auth-form-reg').style.display = 'none';
+    } else {
+      tabs[1].classList.add('active'); tabs[0].classList.remove('active');
+      document.getElementById('auth-form-login').style.display = 'none';
+      document.getElementById('auth-form-reg').style.display = 'block';
+    }
+  }
+
+  function processLogin(e) {
+    e.preventDefault();
+    const acc = document.getElementById('log-account').value.trim();
+    const users = getRegisteredUsers();
+    let matched = users.find(u => u.email.toLowerCase() === acc.toLowerCase() || (u.username && u.username.toLowerCase() === acc.toLowerCase()));
+    if (!matched) { showLuxAlert("Gagal", "Akun tidak ditemukan.", "danger"); return; }
+    loginSuccess(matched);
+  }
+
+  function processRegister(e) {
+    e.preventDefault();
+    const name = document.getElementById('reg-name').value.trim();
+    let username = document.getElementById('reg-username').value.trim();
+    const email = document.getElementById('reg-account').value.trim();
+    if (!username.startsWith('@')) username = '@' + username;
+
+    const newUser = { name, username, email, avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=ff0055&color=fff`, roles: ['NEWBIE'], points: 0 };
+    saveRegisteredUser(newUser);
+    setAuthMode('login');
+    showLuxAlert("Berhasil", "Akun berhasil dibuat, silakan masuk.", "success");
+  }
+
+  function loginSuccess(user) {
+    activeUser = user;
+    localStorage.setItem('piro_active_user', JSON.stringify(user));
+    startLuxuryLoadingAnimation(() => {
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('main-app').style.display = 'flex';
+      switchPage('page-home', document.querySelectorAll('.nav-tab-item')[0]);
+      updateVipUIState();
+    });
+  }
+
+  function logoutApp() {
+    activeUser = null;
+    localStorage.removeItem('piro_active_user');
+    document.getElementById('main-app').style.display = 'none';
+    document.getElementById('auth-screen').style.display = 'flex';
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const savedUser = localStorage.getItem('piro_active_user');
+    if (savedUser) {
+      try { loginSuccess(JSON.parse(savedUser)); } catch(e) { startLuxuryLoadingAnimation(); }
+    } else {
+      startLuxuryLoadingAnimation();
+    }
+  });
+</script>
+
+</body>
+</html>
