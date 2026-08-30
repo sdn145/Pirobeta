@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Pirostore Official</title>
+  
+  <link rel="manifest" href="manifest.json" />
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    :root {
+      --bg-main: #06070c;
+      --app-bg: radial-gradient(circle at top right, #250b38 0%, #0d0e17 40%, #05060a 100%);
+      --card-bg: rgba(18, 20, 32, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #ff0055;
+      --primary-glow: rgba(255, 0, 85, 0.45);
+      --secondary: #00e5ff;
+      --secondary-glow: rgba(0, 229, 255, 0.45);
+      --gold: #ffd700;
+      --gold-glow: rgba(255, 215, 0, 0.4);
+      --text-white: #ffffff;
+      --text-dim: #9aa0b8;
+      --success: #00f5a0;
+      --danger: #ff2a5f;
+      --input-bg: rgba(13, 15, 24, 0.9);
+      --nav-bg: rgba(10, 11, 18, 0.94);
+      --header-bg: rgba(8, 9, 15, 0.88);
+      --item-hover: rgba(255, 255, 255, 0.05);
+      --store-card-grad: linear-gradient(145deg, rgba(30, 20, 45, 0.95), rgba(12, 14, 25, 0.98));
+    }
+
+    body.light-theme {
+      --bg-main: #e8ecf2;
+      --app-bg: linear-gradient(180deg, #f8faff 0%, #eef2f8 100%);
+      --card-bg: rgba(255, 255, 255, 0.92);
+      --card-border: rgba(0, 0, 0, 0.08);
+      --text-white: #111424;
+      --text-dim: #64748b;
+      --input-bg: #f1f5f9;
+      --nav-bg: rgba(255, 255, 255, 0.95);
+      --header-bg: rgba(255, 255, 255, 0.9);
+      --item-hover: rgba(0, 0, 0, 0.03);
+      --store-card-grad: linear-gradient(145deg, #ffffff, #f1f5f9);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-white);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .app-viewport {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      background: var(--app-bg);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 0 60px rgba(0,0,0,0.8);
+      border-left: 1px solid var(--card-border);
+      border-right: 1px solid var(--card-border);
+    }
+
+    .glass-box {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+    }
+
+    #luxurySplashScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: radial-gradient(circle at center, #260a38 0%, #0d0e1a 45%, #040508 100%);
+      z-index: 99999999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+    }
+
+    .splash-glow-ring {
+      position: relative;
+      width: 140px;
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 26px;
+    }
+
+    .splash-logo-img {
+      width: 110px;
+      height: 110px;
+      border-radius: 32px;
+      object-fit: cover;
+      box-shadow: 0 0 35px var(--secondary-glow);
+      border: 2px solid rgba(0, 229, 255, 0.6);
+      z-index: 2;
+    }
+
+    .splash-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 4px;
+      background: linear-gradient(90deg, #ffffff 0%, #00e5ff 40%, #ff0055 70%, #ffd700 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .splash-sub {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      color: var(--secondary);
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+
+    .splash-progress-track {
+      width: 240px;
+      height: 7px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 20px;
+      overflow: hidden;
+      position: relative;
+      border: 1.5px solid rgba(0, 229, 255, 0.3);
+    }
+
+    .splash-progress-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--secondary), var(--primary), var(--gold));
+      transition: width 0.08s linear;
+    }
+
+    .splash-percent-txt {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      font-weight: 900;
+      color: var(--gold);
+      margin-top: 10px;
+      letter-spacing: 1.5px;
+    }
+
+    #auth-screen {
+      padding: 40px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      z-index: 20;
+    }
+
+    .brand-logo {
+      width: 110px;
+      height: 110px;
+      border-radius: 28px;
+      border: 2px solid var(--secondary);
+      box-shadow: 0 0 30px var(--secondary-glow);
+      object-fit: cover;
+    }
+
+    .brand-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, var(--text-white) 20%, #00e5ff 60%, #ff0055 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+      margin-top: 15px;
+    }
+
+    .brand-tagline {
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+      margin-bottom: 25px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .auth-tab-switch {
+      display: flex;
+      width: 100%;
+      background: rgba(10, 11, 16, 0.3);
+      border-radius: 14px;
+      padding: 4px;
+      margin-bottom: 20px;
+      border: 1px solid var(--card-border);
+    }
+
+    .auth-tab-btn {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      color: var(--text-dim);
+      transition: 0.3s;
+    }
+
+    .auth-tab-btn.active {
+      background: linear-gradient(135deg, var(--primary), #b3003b);
+      color: #fff;
+      box-shadow: 0 4px 15px var(--primary-glow);
+    }
+
+    .input-field {
+      width: 100%;
+      margin-bottom: 14px;
+    }
+
+    .input-field label {
+      display: block;
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .input-field input, .input-field select, .input-field textarea {
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: 12px;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-white);
+      font-size: 13px;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    .input-field input:focus, .input-field select:focus, .input-field textarea:focus {
+      border-color: var(--secondary);
+      box-shadow: 0 0 15px var(--secondary-glow);
+    }
+
+    .btn-lux-primary {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #00e5ff, #0077b6);
+      color: #05060a;
+      font-weight: 800;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 20px var(--secondary-glow);
+      transition: 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-google-real {
+      width: 100%;
+      padding: 13px;
+      background: #ffffff;
+      color: #3c4043;
+      font-weight: 700;
+      font-size: 14px;
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    #main-app {
+      display: none;
+      flex-direction: column;
+      min-height: 100vh;
+      padding-bottom: 85px;
+    }
+
+    .top-lux-header {
+      padding: 14px 18px;
+      background: var(--header-bg);
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      backdrop-filter: blur(15px);
+    }
+
+    .brand-header-mini {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 900;
+      font-size: 15px;
+      letter-spacing: 1px;
+      background: linear-gradient(90deg, #fff, var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .bottom-navbar {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      max-width: 480px;
+      height: 72px;
+      background: var(--nav-bg);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      z-index: 50;
+      padding: 0 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .bottom-navbar::-webkit-scrollbar { display: none; }
+
+    .nav-tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+      font-size: 8.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+      gap: 3px;
+      min-width: 52px;
+      flex: 1 0 auto;
+      padding: 4px 2px;
+    }
+
+    .nav-tab-item i { font-size: 15px; }
+    .nav-tab-item.active { color: var(--secondary); font-weight:800; }
+
+    .page-view {
+      display: none;
+      padding: 16px;
+      animation: fadeIn 0.35s ease;
+    }
+    .page-view.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .subpage-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .btn-back {
+      background: none;
+      border: none;
+      color: var(--text-white);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 6px;
+    }
+
+    /* SHORT PRESET / XML STYLES */
+    .preset-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 14px;
+      border: 1px solid var(--card-border);
+      margin-bottom: 12px;
+    }
+
+    .preset-title-header {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      background: linear-gradient(90deg, #fff, var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      border-bottom: 2px solid var(--secondary);
+      padding-bottom: 2px;
+    }
+
+    .preset-action-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-preset-top {
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 800;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-upload-top {
+      background: linear-gradient(135deg, var(--primary), #b3003b);
+      color: #fff;
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .btn-manage-top {
+      background: linear-gradient(135deg, var(--gold), #ea580c);
+      color: #000;
+      box-shadow: 0 0 10px var(--gold-glow);
+    }
+
+    .preset-feed-viewport {
+      height: calc(100vh - 195px);
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      border-radius: 18px;
+    }
+
+    .preset-card-player {
+      scroll-snap-align: start;
+      height: 100%;
+      position: relative;
+      background: #000;
+      border-radius: 18px;
+      overflow: hidden;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--card-border);
+    }
+
+    .preset-card-player video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .preset-floating-bottom {
+      position: absolute;
+      bottom: 16px;
+      left: 14px;
+      right: 70px;
+      z-index: 10;
+      pointer-events: auto;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+    }
+
+    .preset-uploader-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .preset-caption-box {
+      font-size: 12px;
+      color: #f1f5f9;
+      line-height: 1.4;
+      margin-bottom: 12px;
+      max-height: 48px;
+      overflow: hidden;
+    }
+
+    .preset-download-btn-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-get-preset {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      backdrop-filter: blur(10px);
+    }
+
+    .btn-get-am {
+      background: rgba(0, 229, 255, 0.25);
+      color: var(--secondary);
+      border-color: var(--secondary);
+    }
+
+    .btn-get-xml {
+      background: rgba(255, 0, 85, 0.25);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .preset-sidebar-actions {
+      position: absolute;
+      right: 12px;
+      bottom: 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      z-index: 10;
+    }
+
+    .preset-side-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+    }
+
+    .preset-side-btn i { font-size: 26px; }
+
+    /* COMMENTS BOTTOM SHEET */
+    .comments-bottom-sheet {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 9999;
+      justify-content: center;
+      align-items: flex-end;
+    }
+
+    .comments-sheet-inner {
+      width: 100%;
+      max-width: 480px;
+      height: 65vh;
+      background: #0d0f1a;
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+      border-top: 2px solid var(--secondary);
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
+    }
+
+    .comments-list-box {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .comment-item-card {
+      display: flex;
+      gap: 10px;
+    }
+
+    .comment-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .comment-content-box {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+    }
+
+    .comment-replies-list {
+      margin-top: 6px;
+      padding-left: 10px;
+      border-left: 2px solid var(--secondary);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    /* MANAGE CREATOR STUDIO STYLES */
+    .manage-preset-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .manage-stat-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 10px 0;
+    }
+
+    .manage-stat-box {
+      background: rgba(0,0,0,0.3);
+      padding: 8px;
+      border-radius: 10px;
+      text-align: center;
+      border: 1px solid var(--card-border);
+    }
+
+    .lux-modal-dialog {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(2, 3, 6, 0.85);
+      backdrop-filter: blur(12px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .lux-modal-box {
+      width: 100%;
+      max-width: 360px;
+      background: #11131f;
+      border-radius: 22px;
+      padding: 26px 20px;
+      text-align: center;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+
+<div id="luxurySplashScreen">
+  <div class="splash-glow-ring">
+    <img src="https://cdn.phototourl.com/member/2026-08-27-5b41a41c-b768-49cc-931b-92a2f9b3bc9b.jpg" class="splash-logo-img" alt="Piro Logo">
+  </div>
+  <div class="splash-title">PIROSTORE</div>
+  <div class="splash-sub">Luxury Digital Ecosystem</div>
+  <div class="splash-progress-track">
+    <div id="splashProgressBar" class="splash-progress-bar"></div>
+  </div>
+  <div id="splashPercentText" class="splash-percent-txt">SYSTEM READY 0%</div>
+</div>
+
+<div class="app-viewport">
+
+  <!-- SCREEN LOGIN / REGISTER -->
+  <div id="auth-screen">
+    <img src="https://cdn.phototourl.com/member/2026-08-27-5b41a41c-b768-49cc-931b-92a2f9b3bc9b.jpg" alt="Logo Pirostore" class="brand-logo" />
+    <h1 class="brand-title">PIROSTORE</h1>
+    <p class="brand-tagline">Official Digital Services</p>
+
+    <div class="auth-tab-switch">
+      <div class="auth-tab-btn active" onclick="setAuthMode('login')">Masuk</div>
+      <div class="auth-tab-btn" onclick="setAuthMode('register')">Daftar Akun</div>
+    </div>
+
+    <button type="button" class="btn-google-real" onclick="fallbackGoogleLogin()">
+      <svg width="20" height="20" viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Masuk dengan Google
+    </button>
+
+    <form id="auth-form-login" onsubmit="processLogin(event)" style="width: 100%;">
+      <div class="input-field">
+        <label>Email / Nomor / Username</label>
+        <input type="text" id="log-account" placeholder="contoh@gmail.com / @username" required />
+      </div>
+      <div class="input-field">
+        <label>Kata Sandi</label>
+        <input type="password" id="log-password" required placeholder="••••••••" />
+      </div>
+      <button type="submit" class="btn-lux-primary"><i class="fa-solid fa-arrow-right-to-bracket"></i> Masuk ke Pirostore</button>
+    </form>
+
+    <form id="auth-form-reg" onsubmit="processRegister(event)" style="width: 100%; display: none;">
+      <div class="input-field">
+        <label>Display Name</label>
+        <input type="text" id="reg-name" placeholder="Nama Anda" required />
+      </div>
+      <div class="input-field">
+        <label>Username (Awalan @)</label>
+        <input type="text" id="reg-username" placeholder="@username" required />
+      </div>
+      <div class="input-field">
+        <label>Email</label>
+        <input type="email" id="reg-account" placeholder="nama@gmail.com" required />
+      </div>
+      <div class="input-field">
+        <label>Nomor WhatsApp</label>
+        <input type="tel" id="reg-phone" placeholder="08xxxxxxxxxx" required />
+      </div>
+      <div class="input-field">
+        <label>Kata Sandi</label>
+        <input type="password" id="reg-password" required placeholder="••••••••" />
+      </div>
+      <button type="submit" class="btn-lux-primary" style="background: linear-gradient(135deg, var(--primary), #b3003b); color: #fff;">
+        <i class="fa-solid fa-user-plus"></i> Daftar Akun Baru
+      </button>
+    </form>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="main-app">
+
+    <div class="top-lux-header">
+      <div class="brand-header-mini">
+        <i class="fa-solid fa-bolt" style="color:var(--secondary);"></i>
+        <span>PIROSTORE</span>
+      </div>
+      <div style="font-size:11px; color:var(--text-dim);" id="topUserGreeting">Halo, Editor</div>
+    </div>
+
+    <!-- HALAMAN 1: BERANDA -->
+    <div id="page-home" class="page-view active">
+      <div class="glass-box" style="padding:20px; text-align:center; margin-bottom:16px;">
+        <h2 style="font-size:18px; font-weight:800; color:var(--secondary); margin-bottom:6px;">Selamat Datang di Pirostore ✨</h2>
+        <p style="font-size:12px; color:var(--text-dim);">Pusat Ekosistem Digital, Preset Alight Motion & XML Terlengkap.</p>
+      </div>
+      <div class="btn-lux-primary" onclick="switchPage('page-presets', document.querySelectorAll('.nav-tab-item')[1])">
+        <i class="fa-solid fa-play"></i> Buka Short Preset / XML
+      </div>
+    </div>
+
+    <!-- HALAMAN 2: SHORT PRESET / XML (PENGGANTI HALAMAN VIDEO) -->
+    <div id="page-presets" class="page-view" style="padding: 10px 12px;">
+      
+      <!-- HEADER SHORT PRESET / XML -->
+      <div class="preset-header-bar">
+        <div class="preset-title-header">Short Prst / xml</div>
+        <div class="preset-action-btns">
+          <button class="btn-preset-top btn-manage-top" onclick="openSubPage('subpage-manage-presets')">
+            <i class="fa-solid fa-chart-line"></i> Kelola
+          </button>
+          <button class="btn-preset-top btn-upload-top" onclick="openSubPage('subpage-upload-preset')">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Upload
+          </button>
+        </div>
+      </div>
+
+      <!-- FEED SHORT PRESET TIKTOK STYLE -->
+      <div class="preset-feed-viewport" id="presetFeedContainer">
+        <!-- Preset cards rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- HALAMAN 3: PROFIL -->
+    <div id="page-profile" class="page-view">
+      <div class="glass-box" style="padding: 20px; text-align: center;">
+        <img id="profile-avatar-big" src="" style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--secondary); margin-bottom: 10px; object-fit: cover;" />
+        <h3 id="profile-name-big" style="font-size: 18px; font-weight: 800;">User</h3>
+        <p id="profile-email-big" style="font-size: 12px; color: var(--secondary); margin-bottom: 16px;">@username</p>
+        <button onclick="logoutApp()" class="btn-lux-primary" style="background: rgba(255,0,85,0.15); color: var(--primary); border: 1px solid var(--primary); box-shadow: none;">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar
+        </button>
+      </div>
+    </div>
+
+    <!-- SUBPAGE: FORM UPLOAD PRESET -->
+    <div id="subpage-upload-preset" class="page-view">
+      <div class="subpage-header">
+        <button class="btn-back" onclick="switchPage('page-presets', document.querySelectorAll('.nav-tab-item')[1])"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3 style="font-size: 16px; font-weight: 800;">Upload Short Preset / XML</h3>
+      </div>
+
+      <div class="glass-box" style="padding: 18px;">
+        <form id="formUploadPreset" onsubmit="handleUploadPreset(event)">
+          <div class="input-field">
+            <label>Caption / Judul Video JJ</label>
+            <textarea id="upPresetCaption" rows="3" placeholder="Contoh: JJ AM Keren Viral TikTok Preset 5MB & XML..." required></textarea>
+          </div>
+
+          <div class="input-field">
+            <label>Link Preset (Alight Motion 5MB)</label>
+            <input type="url" id="upPresetLink" placeholder="https://alight.link/..." required />
+          </div>
+
+          <div class="input-field">
+            <label>Link XML (Drive / MediaFire)</label>
+            <input type="url" id="upXmlLink" placeholder="https://drive.google.com/..." required />
+          </div>
+
+          <div class="input-field">
+            <label>Pilih File Cuplikan Video JJ (MP4 / WebM)</label>
+            <input type="file" id="upVideoFile" accept="video/*" required onchange="previewVideoUpload(event)" />
+          </div>
+
+          <div id="videoUploadPreviewWrap" style="display:none; margin-bottom:14px; text-align:center;">
+            <video id="videoUploadPreviewEl" controls style="width:100%; max-height:220px; border-radius:12px; background:#000;"></video>
+          </div>
+
+          <button type="submit" class="btn-lux-primary" id="btnSubmitPreset">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Publikasikan Preset
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- SUBPAGE: KELOLA PRESET / DEVELOPER CREATOR STUDIO -->
+    <div id="subpage-manage-presets" class="page-view">
+      <div class="subpage-header">
+        <button class="btn-back" onclick="switchPage('page-presets', document.querySelectorAll('.nav-tab-item')[1])"><i class="fa-solid fa-arrow-left"></i></button>
+        <div>
+          <h3 style="font-size: 16px; font-weight: 800;">Studio Kelola Preset</h3>
+          <div style="font-size: 11px; color: var(--gold);">Khusus Pengunggah / Developer Preset</div>
+        </div>
+      </div>
+
+      <div id="myManagedPresetsContainer">
+        <!-- Rendered list of creator's uploaded presets with view/like/comment inspection -->
+      </div>
+    </div>
+
+    <!-- SUBPAGE: DETAIL STATISTIK & BALAS KOMENTAR (CREATOR STUDIO) -->
+    <div id="subpage-creator-detail" class="page-view">
+      <div class="subpage-header">
+        <button class="btn-back" onclick="openSubPage('subpage-manage-presets')"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3 style="font-size: 16px; font-weight: 800;">Detail & Pengelolaan Preset</h3>
+      </div>
+
+      <div class="glass-box" style="padding:16px; margin-bottom:14px;">
+        <h4 id="creatorDetailTitle" style="font-size:14px; font-weight:800; color:#fff; margin-bottom:8px;">-</h4>
+        
+        <div class="manage-stat-row">
+          <div class="manage-stat-box">
+            <div style="font-size:10px; color:var(--text-dim);">Penonton</div>
+            <div id="creatorDetailViews" style="font-size:15px; font-weight:900; color:var(--secondary);">0</div>
+          </div>
+          <div class="manage-stat-box">
+            <div style="font-size:10px; color:var(--text-dim);">Suka / Like</div>
+            <div id="creatorDetailLikes" style="font-size:15px; font-weight:900; color:var(--primary);">0</div>
+          </div>
+          <div class="manage-stat-box">
+            <div style="font-size:10px; color:var(--text-dim);">Komentar</div>
+            <div id="creatorDetailComments" style="font-size:15px; font-weight:900; color:var(--gold);">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-box" style="padding:16px; margin-bottom:14px;">
+        <div style="font-size:12px; font-weight:800; color:var(--secondary); margin-bottom:8px;">
+          <i class="fa-solid fa-eye"></i> Daftar User yang Menonton:
+        </div>
+        <div id="creatorViewersList" style="display:flex; flex-direction:column; gap:6px; max-height:120px; overflow-y:auto;"></div>
+      </div>
+
+      <div class="glass-box" style="padding:16px; margin-bottom:14px;">
+        <div style="font-size:12px; font-weight:800; color:var(--primary); margin-bottom:8px;">
+          <i class="fa-solid fa-heart"></i> Daftar User yang Menyukai:
+        </div>
+        <div id="creatorLikersList" style="display:flex; flex-direction:column; gap:6px; max-height:120px; overflow-y:auto;"></div>
+      </div>
+
+      <div class="glass-box" style="padding:16px;">
+        <div style="font-size:12px; font-weight:800; color:var(--gold); margin-bottom:8px;">
+          <i class="fa-solid fa-comments"></i> Kelola & Balas Komentar:
+        </div>
+        <div id="creatorCommentsManageList" style="display:flex; flex-direction:column; gap:10px;"></div>
+      </div>
+    </div>
+
+    <!-- BOTTOM NAVBAR -->
+    <div class="bottom-navbar">
+      <div class="nav-tab-item active" onclick="switchPage('page-home', this)"><i class="fa-solid fa-house"></i><span>Beranda</span></div>
+      <div class="nav-tab-item" onclick="switchPage('page-presets', this)"><i class="fa-solid fa-play"></i><span>Preset XML</span></div>
+      <div class="nav-tab-item" onclick="switchPage('page-profile', this)"><i class="fa-solid fa-user"></i><span>Profil</span></div>
+    </div>
+
+  </div>
+
+  <!-- COMMENTS BOTTOM SHEET OVERLAY (TIKTOK STYLE) -->
+  <div class="comments-bottom-sheet" id="commentsBottomSheet">
+    <div class="comments-sheet-inner">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--card-border); padding-bottom:8px; margin-bottom:10px;">
+        <div style="font-size:13px; font-weight:800; color:#fff;" id="sheetCommentCount">Komentar (0)</div>
+        <button onclick="closeCommentsSheet()" style="background:none; border:none; color:var(--text-dim); font-size:18px; cursor:pointer;">&times;</button>
+      </div>
+
+      <div class="comments-list-box" id="sheetCommentsListBox"></div>
+
+      <div style="display:flex; gap:8px; padding-top:10px; border-top:1px solid var(--card-border);">
+        <input type="text" id="publicCommentInput" placeholder="Tulis komentar publik..." style="flex:1; padding:10px 14px; border-radius:10px; background:var(--input-bg); border:1px solid var(--card-border); color:#fff; font-size:12px; outline:none;" onkeypress="if(event.key==='Enter') sendPublicComment()" />
+        <button class="btn-lux-primary" style="width:auto; padding:0 16px;" onclick="sendPublicComment()"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GLOBAL ALERT MODAL -->
+  <div class="lux-modal-dialog" id="luxCustomAlertModal">
+    <div class="lux-modal-box">
+      <h3 id="luxModalTitle" style="font-size: 16px; font-weight: 800; margin-bottom: 6px; color:#fff;">Perhatian!</h3>
+      <p id="luxModalMessage" style="font-size: 12px; color: var(--text-dim); margin-bottom: 16px;">Pesan...</p>
+      <button class="btn-lux-primary" onclick="closeLuxAlert()">Mengerti</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyD3v3avQGZn6LpSfXft9sgNcOcroNeTN1A",
+    authDomain: "pirostore-db.firebaseapp.com",
+    databaseURL: "https://pirostore-db-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "pirostore-db",
+    storageBucket: "pirostore-db.firebasestorage.app",
+    messagingSenderId: "914886420309",
+    appId: "1:914886420309:web:51204859f14b2a6a0e31dc",
+    measurementId: "G-8FSV9CJWNY"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  let activeUser = null;
+  let globalPresets = [];
+  let currentActiveSheetPresetId = null;
+  let currentManagingPresetId = null;
+  let tempUploadVideoBase64 = null;
+
+  function sanitizeKey(email) {
+    return (email || 'unknown').replace(/[.#$[\]]/g, '_').toLowerCase();
+  }
+
+  function showLuxAlert(title, message) {
+    document.getElementById('luxModalTitle').innerText = title;
+    document.getElementById('luxModalMessage').innerText = message;
+    document.getElementById('luxCustomAlertModal').style.display = 'flex';
+  }
+
+  function closeLuxAlert() {
+    document.getElementById('luxCustomAlertModal').style.display = 'none';
+  }
+
+  function startLuxuryLoadingAnimation(callback) {
+    const splash = document.getElementById('luxurySplashScreen');
+    const bar = document.getElementById('splashProgressBar');
+    const txt = document.getElementById('splashPercentText');
+    if (!splash) { if(callback) callback(); return; }
+
+    splash.style.display = 'flex';
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 2;
+      if (bar) bar.style.width = progress + '%';
+      if (txt) txt.innerText = 'INITIALIZING LUXURY ' + progress + '%';
+      if (progress >= 100) {
+        clearInterval(interval);
+        setTimeout(() => {
+          splash.style.opacity = '0';
+          setTimeout(() => {
+            splash.style.display = 'none';
+            if (callback) callback();
+          }, 400);
+        }, 200);
+      }
+    }, 30);
+  }
+
+  /* AUTHENTICATION */
+  function setAuthMode(mode) {
+    const tabs = document.querySelectorAll('.auth-tab-btn');
+    if(mode === 'login') {
+      tabs[0].classList.add('active');
+      tabs[1].classList.remove('active');
+      document.getElementById('auth-form-login').style.display = 'block';
+      document.getElementById('auth-form-reg').style.display = 'none';
+    } else {
+      tabs[1].classList.add('active');
+      tabs[0].classList.remove('active');
+      document.getElementById('auth-form-login').style.display = 'none';
+      document.getElementById('auth-form-reg').style.display = 'block';
+    }
+  }
+
+  function processRegister(e) {
+    e.preventDefault();
+    const name = document.getElementById('reg-name').value.trim();
+    let username = document.getElementById('reg-username').value.trim();
+    const email = document.getElementById('reg-account').value.trim();
+    const phone = document.getElementById('reg-phone').value.trim();
+    const password = document.getElementById('reg-password').value;
+
+    if (!username.startsWith('@')) username = '@' + username;
+
+    const newUser = {
+      name, username, email, phone, password,
+      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=00e5ff&color=000`,
+      last_active: Date.now()
+    };
+
+    db.ref('users/' + sanitizeKey(email)).set(newUser).then(() => {
+      loginSuccess(newUser);
+    });
+  }
+
+  function processLogin(e) {
+    e.preventDefault();
+    const acc = document.getElementById('log-account').value.trim().toLowerCase();
+    const pass = document.getElementById('log-password').value;
+
+    db.ref('users').once('value', (snap) => {
+      const data = snap.val() || {};
+      const users = Object.keys(data).map(k => data[k]);
+      const matched = users.find(u => u.email.toLowerCase() === acc || u.username.toLowerCase() === acc || u.phone === acc);
+      if (matched && matched.password === pass) {
+        loginSuccess(matched);
+      } else {
+        showLuxAlert("Gagal Masuk", "Akun atau kata sandi Anda salah.");
+      }
+    });
+  }
+
+  function fallbackGoogleLogin() {
+    const email = prompt("Masukkan Email Akun Google Anda:", "editor.piro@gmail.com");
+    if (email) {
+      const cleanEmail = email.trim().toLowerCase();
+      const name = cleanEmail.split('@')[0];
+      const user = {
+        name: name,
+        username: '@' + name,
+        email: cleanEmail,
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=00e5ff&color=000`,
+        last_active: Date.now()
+      };
+      db.ref('users/' + sanitizeKey(cleanEmail)).update(user);
+      loginSuccess(user);
+    }
+  }
+
+  function loginSuccess(user) {
+    activeUser = user;
+    localStorage.setItem('piro_active_user', JSON.stringify(user));
+
+    startLuxuryLoadingAnimation(() => {
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('main-app').style.display = 'flex';
+      document.getElementById('topUserGreeting').innerText = user.name;
+      document.getElementById('profile-name-big').innerText = user.name;
+      document.getElementById('profile-email-big').innerText = user.username;
+      document.getElementById('profile-avatar-big').src = user.avatar;
+
+      listenToShortPresets();
+      switchPage('page-presets', document.querySelectorAll('.bottom-navbar .nav-tab-item')[1]);
+    });
+  }
+
+  function logoutApp() {
+    activeUser = null;
+    localStorage.removeItem('piro_active_user');
+    document.getElementById('main-app').style.display = 'none';
+    document.getElementById('auth-screen').style.display = 'flex';
+  }
+
+  function switchPage(pageId, element) {
+    document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab-item').forEach(btn => btn.classList.remove('active'));
+    
+    document.getElementById(pageId).classList.add('active');
+    if (element) element.classList.add('active');
+    if (pageId === 'subpage-manage-presets') renderManagedPresets();
+  }
+
+  function openSubPage(pageId) {
+    document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    if (pageId === 'subpage-manage-presets') renderManagedPresets();
+  }
+
+  /* PRESET UPLOAD & REALTIME FEED */
+  function previewVideoUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      tempUploadVideoBase64 = evt.target.result;
+      const prevEl = document.getElementById('videoUploadPreviewEl');
+      prevEl.src = tempUploadVideoBase64;
+      document.getElementById('videoUploadPreviewWrap').style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function handleUploadPreset(e) {
+    e.preventDefault();
+    if (!activeUser) return;
+
+    const caption = document.getElementById('upPresetCaption').value.trim();
+    const linkPreset = document.getElementById('upPresetLink').value.trim();
+    const linkXml = document.getElementById('upXmlLink').value.trim();
+
+    if (!caption || !linkPreset || !linkXml || !tempUploadVideoBase64) {
+      showLuxAlert("Form Belum Lengkap", "Harap isi caption, link preset, link XML, dan file video cuplikan!");
+      return;
+    }
+
+    const newPreset = {
+      caption: caption,
+      linkPreset: linkPreset,
+      linkXml: linkXml,
+      videoSrc: tempUploadVideoBase64,
+      authorName: activeUser.name,
+      authorUsername: activeUser.username,
+      authorEmail: activeUser.email,
+      authorAvatar: activeUser.avatar,
+      likesCount: 0,
+      viewsCount: 0,
+      commentsCount: 0,
+      timestamp: Date.now()
+    };
+
+    const submitBtn = document.getElementById('btnSubmitPreset');
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Mengunggah Preset...";
+
+    db.ref('short_presets').push(newPreset).then(() => {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Publikasikan Preset';
+      document.getElementById('formUploadPreset').reset();
+      document.getElementById('videoUploadPreviewWrap').style.display = 'none';
+      tempUploadVideoBase64 = null;
+      switchPage('page-presets', document.querySelectorAll('.bottom-navbar .nav-tab-item')[1]);
+      showLuxAlert("Berhasil Diunggah! 🎉", "Preset Anda sekarang dapat dilihat dan di-download semua user.");
+    }).catch(err => {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Publikasikan Preset';
+      showLuxAlert("Gagal Upload", err.message);
+    });
+  }
+
+  function listenToShortPresets() {
+    db.ref('short_presets').on('value', (snap) => {
+      const data = snap.val() || {};
+      globalPresets = Object.keys(data).map(k => ({ id: k, ...data[k] })).sort((a,b) => b.timestamp - a.timestamp);
+      renderPresetFeed();
+      if (document.getElementById('subpage-manage-presets').classList.contains('active')) {
+        renderManagedPresets();
+      }
+    });
+  }
+
+  function renderPresetFeed() {
+    const container = document.getElementById('presetFeedContainer');
+    if (!container) return;
+
+    if (globalPresets.length === 0) {
+      container.innerHTML = `
+        <div class="glass-box" style="padding: 40px 20px; text-align: center; color: var(--text-dim); margin-top: 20px;">
+          <i class="fa-solid fa-clapperboard" style="font-size: 38px; color: var(--secondary); margin-bottom: 12px;"></i>
+          <p style="font-size: 13px;">Belum ada preset yang diunggah.</p>
+          <button class="btn-lux-primary" style="margin-top: 14px;" onclick="openSubPage('subpage-upload-preset')">Jadilah yang Pertama Upload!</button>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = globalPresets.map(item => {
+      const isLiked = item.likes && activeUser && item.likes[sanitizeKey(activeUser.email)];
+      return `
+        <div class="preset-card-player" data-preset-id="${item.id}">
+          <video src="${item.videoSrc}" loop playsinline controls onplay="trackPresetView('${item.id}')"></video>
+          
+          <div class="preset-floating-bottom">
+            <div class="preset-uploader-row">
+              <span style="font-size:13px; font-weight:900; color:#fff;">${item.authorUsername}</span>
+              <span style="font-size:9px; background:rgba(0,229,255,0.2); color:var(--secondary); padding:2px 6px; border-radius:4px; font-weight:800;">CREATOR</span>
+            </div>
+            
+            <div class="preset-caption-box">${item.caption}</div>
+
+            <div class="preset-download-btn-row">
+              <a href="${item.linkPreset}" target="_blank" class="btn-get-preset btn-get-am">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Preset AM
+              </a>
+              <a href="${item.linkXml}" target="_blank" class="btn-get-preset btn-get-xml">
+                <i class="fa-solid fa-code"></i> File XML
+              </a>
+            </div>
+          </div>
+
+          <div class="preset-sidebar-actions">
+            <img src="${item.authorAvatar || 'https://ui-avatars.com/api/?name=User'}" style="width:42px; height:42px; border-radius:50%; border:2px solid var(--secondary); object-fit:cover;" />
+            
+            <button class="preset-side-btn" onclick="toggleLikePreset('${item.id}')">
+              <i class="fa-solid fa-heart" style="color:${isLiked ? 'var(--primary)' : '#fff'};"></i>
+              <span>${item.likesCount || 0}</span>
+            </button>
+
+            <button class="preset-side-btn" onclick="openCommentsSheet('${item.id}')">
+              <i class="fa-solid fa-comment-dots" style="color:var(--secondary);"></i>
+              <span>${item.commentsCount || 0}</span>
+            </button>
+
+            <button class="preset-side-btn" onclick="sharePreset('${item.id}')">
+              <i class="fa-solid fa-share-nodes" style="color:var(--gold);"></i>
+              <span>Bagikan</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function trackPresetView(presetId) {
+    if (!activeUser || !presetId) return;
+    const userKey = sanitizeKey(activeUser.email);
+    db.ref(`short_presets/${presetId}/viewers/${userKey}`).set({
+      name: activeUser.name,
+      username: activeUser.username,
+      avatar: activeUser.avatar,
+      timestamp: Date.now()
+    }).then(() => {
+      db.ref(`short_presets/${presetId}/viewers`).once('value', snap => {
+        const count = snap.numChildren();
+        db.ref(`short_presets/${presetId}/viewsCount`).set(count);
+      });
+    });
+  }
+
+  function toggleLikePreset(presetId) {
+    if (!activeUser) return;
+    const userKey = sanitizeKey(activeUser.email);
+    const likeRef = db.ref(`short_presets/${presetId}/likes/${userKey}`);
+
+    likeRef.once('value', snap => {
+      if (snap.exists()) {
+        likeRef.remove();
+      } else {
+        likeRef.set({
+          name: activeUser.name,
+          username: activeUser.username,
+          avatar: activeUser.avatar,
+          timestamp: Date.now()
+        });
+      }
+      setTimeout(() => {
+        db.ref(`short_presets/${presetId}/likes`).once('value', s => {
+          const count = s.numChildren();
+          db.ref(`short_presets/${presetId}/likesCount`).set(count);
+        });
+      }, 200);
+    });
+  }
+
+  function sharePreset(presetId) {
+    const item = globalPresets.find(p => p.id === presetId);
+    if (!item) return;
+    if (navigator.share) {
+      navigator.share({
+        title: `Preset XML by ${item.authorUsername}`,
+        text: item.caption,
+        url: window.location.href
+      }).catch(()=>{});
+    } else {
+      navigator.clipboard.writeText(item.linkPreset);
+      showLuxAlert("Link Tersalin! 📋", "Link Preset Alight Motion telah disalin ke clipboard.");
+    }
+  }
+
+  /* COMMENTS MODAL & REPLIES SYSTEM */
+  function openCommentsSheet(presetId) {
+    currentActiveSheetPresetId = presetId;
+    document.getElementById('commentsBottomSheet').style.display = 'flex';
+    loadSheetComments(presetId);
+  }
+
+  function closeCommentsSheet() {
+    document.getElementById('commentsBottomSheet').style.display = 'none';
+  }
+
+  function loadSheetComments(presetId) {
+    db.ref(`preset_comments/${presetId}`).on('value', snap => {
+      const data = snap.val() || {};
+      const comments = Object.keys(data).map(k => ({ id: k, ...data[k] })).sort((a,b) => a.timestamp - b.timestamp);
+      
+      document.getElementById('sheetCommentCount').innerText = `Komentar (${comments.length})`;
+      const box = document.getElementById('sheetCommentsListBox');
+      if (!box) return;
+
+      if (comments.length === 0) {
+        box.innerHTML = '<div style="font-size:12px; color:var(--text-dim); text-align:center; padding:30px;">Belum ada komentar. Tulis komentar pertama kamu!</div>';
+        return;
+      }
+
+      box.innerHTML = comments.map(c => {
+        let repliesHtml = '';
+        if (c.replies) {
+          const rList = Object.keys(c.replies).map(rk => c.replies[rk]);
+          repliesHtml = `
+            <div class="comment-replies-list">
+              ${rList.map(r => `
+                <div style="font-size:11px; color:#ddd; background:rgba(0,0,0,0.3); padding:4px 8px; border-radius:6px;">
+                  <span style="font-weight:800; color:var(--gold);">${r.authorUsername} (Author):</span> ${r.text}
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+
+        return `
+          <div class="comment-item-card">
+            <img src="${c.authorAvatar || 'https://ui-avatars.com/api/?name=User'}" class="comment-avatar" />
+            <div class="comment-content-box">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:11px; font-weight:800; color:var(--secondary);">${c.authorUsername}</span>
+                <span style="font-size:9px; color:var(--text-dim);">${new Date(c.timestamp).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}</span>
+              </div>
+              <div style="font-size:12px; color:#fff; margin-top:2px;">${c.text}</div>
+              ${repliesHtml}
+            </div>
+          </div>
+        `;
+      }).join('');
+      box.scrollTop = box.scrollHeight;
+    });
+  }
+
+  function sendPublicComment() {
+    const input = document.getElementById('publicCommentInput');
+    const text = input.value.trim();
+    if (!text || !activeUser || !currentActiveSheetPresetId) return;
+
+    db.ref(`preset_comments/${currentActiveSheetPresetId}`).push({
+      authorName: activeUser.name,
+      authorUsername: activeUser.username,
+      authorEmail: activeUser.email,
+      authorAvatar: activeUser.avatar,
+      text: text,
+      timestamp: Date.now()
+    }).then(() => {
+      input.value = '';
+      db.ref(`preset_comments/${currentActiveSheetPresetId}`).once('value', s => {
+        const count = s.numChildren();
+        db.ref(`short_presets/${currentActiveSheetPresetId}/commentsCount`).set(count);
+      });
+    });
+  }
+
+  /* CREATOR STUDIO / KELOLA PRESET DEVELOPER */
+  function renderManagedPresets() {
+    const container = document.getElementById('myManagedPresetsContainer');
+    if (!container || !activeUser) return;
+
+    const myPresets = globalPresets.filter(p => p.authorEmail.toLowerCase() === activeUser.email.toLowerCase());
+
+    if (myPresets.length === 0) {
+      container.innerHTML = `
+        <div class="glass-box" style="padding:30px 16px; text-align:center; color:var(--text-dim);">
+          <i class="fa-solid fa-folder-open" style="font-size:32px; color:var(--gold); margin-bottom:10px;"></i>
+          <p style="font-size:12px;">Anda belum mengunggah preset apapun.</p>
+          <button class="btn-lux-primary" style="margin-top:12px;" onclick="openSubPage('subpage-upload-preset')">Upload Sekarang</button>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = myPresets.map(p => `
+      <div class="manage-preset-card">
+        <div style="font-size:13px; font-weight:800; color:#fff; margin-bottom:4px;">${p.caption}</div>
+        <div style="font-size:10px; color:var(--text-dim); margin-bottom:8px;">Diupload: ${new Date(p.timestamp).toLocaleDateString('id-ID')}</div>
+
+        <div class="manage-stat-row">
+          <div class="manage-stat-box">
+            <div style="font-size:10px; color:var(--text-dim);"><i class="fa-solid fa-eye"></i> Penonton</div>
+            <div style="font-size:14px; font-weight:800; color:var(--secondary);">${p.viewsCount || 0}</div>
+          </div>
+          <div class="manage-stat-box">
+            <div style="font-size:10px; color:var(--text-dim);"><i class="fa-solid fa-heart"></i> Like</div>
+            <div style="font-size:14px; font-weight:800; color:var(--primary);">${p.likesCount || 0}</div>
+          </div>
+          <div class="manage-stat-box">
+            <div style="font-size:10px; color:var(--text-dim);"><i class="fa-solid fa-comments"></i> Komentar</div>
+            <div style="font-size:14px; font-weight:800; color:var(--gold);">${p.commentsCount || 0}</div>
+          </div>
+        </div>
+
+        <button class="btn-lux-primary" style="padding:9px; font-size:11px;" onclick="openCreatorStudioDetail('${p.id}')">
+          <i class="fa-solid fa-users-gear"></i> Kelola Interaksi & Balas Komentar
+        </button>
+      </div>
+    `).join('');
+  }
+
+  function openCreatorStudioDetail(presetId) {
+    const item = globalPresets.find(p => p.id === presetId);
+    if (!item) return;
+    currentManagingPresetId = presetId;
+
+    document.getElementById('creatorDetailTitle').innerText = item.caption;
+    document.getElementById('creatorDetailViews').innerText = item.viewsCount || 0;
+    document.getElementById('creatorDetailLikes').innerText = item.likesCount || 0;
+    document.getElementById('creatorDetailComments').innerText = item.commentsCount || 0;
+
+    // Viewers inspection
+    const viewersBox = document.getElementById('creatorViewersList');
+    if (item.viewers) {
+      const vList = Object.keys(item.viewers).map(k => item.viewers[k]);
+      viewersBox.innerHTML = vList.map(v => `
+        <div style="display:flex; align-items:center; gap:8px; font-size:11px; background:rgba(255,255,255,0.03); padding:4px 8px; border-radius:6px;">
+          <img src="${v.avatar || 'https://ui-avatars.com/api/?name=User'}" style="width:20px; height:20px; border-radius:50%; object-fit:cover;" />
+          <span style="color:#fff; font-weight:700;">${v.name}</span>
+          <span style="color:var(--secondary);">${v.username}</span>
+        </div>
+      `).join('');
+    } else {
+      viewersBox.innerHTML = '<div style="font-size:11px; color:var(--text-dim);">Belum ada riwayat penonton.</div>';
+    }
+
+    // Likers inspection
+    const likersBox = document.getElementById('creatorLikersList');
+    if (item.likes) {
+      const lList = Object.keys(item.likes).map(k => item.likes[k]);
+      likersBox.innerHTML = lList.map(l => `
+        <div style="display:flex; align-items:center; gap:8px; font-size:11px; background:rgba(255,255,255,0.03); padding:4px 8px; border-radius:6px;">
+          <img src="${l.avatar || 'https://ui-avatars.com/api/?name=User'}" style="width:20px; height:20px; border-radius:50%; object-fit:cover;" />
+          <span style="color:#fff; font-weight:700;">${l.name}</span>
+          <span style="color:var(--primary);">${l.username}</span>
+        </div>
+      `).join('');
+    } else {
+      likersBox.innerHTML = '<div style="font-size:11px; color:var(--text-dim);">Belum ada user yang like.</div>';
+    }
+
+    // Comments & Reply inspection
+    loadCreatorManageComments(presetId);
+    openSubPage('subpage-creator-detail');
+  }
+
+  function loadCreatorManageComments(presetId) {
+    db.ref(`preset_comments/${presetId}`).on('value', snap => {
+      const data = snap.val() || {};
+      const comments = Object.keys(data).map(k => ({ id: k, ...data[k] }));
+      const box = document.getElementById('creatorCommentsManageList');
+      if (!box) return;
+
+      if (comments.length === 0) {
+        box.innerHTML = '<div style="font-size:11px; color:var(--text-dim);">Belum ada komentar untuk dibalas.</div>';
+        return;
+      }
+
+      box.innerHTML = comments.map(c => {
+        let existingRepliesHtml = '';
+        if (c.replies) {
+          const rList = Object.keys(c.replies).map(rk => c.replies[rk]);
+          existingRepliesHtml = rList.map(r => `
+            <div style="font-size:11px; color:var(--gold); margin-top:4px; padding-left:8px; border-left:2px solid var(--gold);">
+              Balasan Anda: ${r.text}
+            </div>
+          `).join('');
+        }
+
+        return `
+          <div style="background:rgba(255,255,255,0.04); padding:10px; border-radius:10px; border:1px solid var(--card-border);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <span style="font-size:11px; font-weight:800; color:var(--secondary);">${c.authorUsername}</span>
+              <span style="font-size:9px; color:var(--text-dim);">${new Date(c.timestamp).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}</span>
+            </div>
+            <div style="font-size:12px; color:#fff;">${c.text}</div>
+            ${existingRepliesHtml}
+
+            <div style="display:flex; gap:6px; margin-top:8px;">
+              <input type="text" id="replyInput_${c.id}" placeholder="Ketik balasan sebagai author..." style="flex:1; padding:6px 10px; font-size:11px; border-radius:8px; background:var(--input-bg); border:1px solid var(--card-border); color:#fff; outline:none;" />
+              <button class="btn-lux-primary" style="width:auto; padding:0 12px; font-size:10px;" onclick="sendCreatorReply('${c.id}')">Balas</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    });
+  }
+
+  function sendCreatorReply(commentId) {
+    const input = document.getElementById(`replyInput_${commentId}`);
+    const text = input.value.trim();
+    if (!text || !activeUser || !currentManagingPresetId) return;
+
+    db.ref(`preset_comments/${currentManagingPresetId}/${commentId}/replies`).push({
+      authorUsername: activeUser.username,
+      authorName: activeUser.name,
+      text: text,
+      timestamp: Date.now()
+    }).then(() => {
+      input.value = '';
+      showLuxAlert("Balasan Terkirim! 💬", "Komentar berhasil dibalas.");
+    });
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('piro_active_user');
+    if (saved) {
+      try {
+        loginSuccess(JSON.parse(saved));
+      } catch(e) {
+        startLuxuryLoadingAnimation();
+      }
+    } else {
+      startLuxuryLoadingAnimation();
+    }
+  });
+</script>
+
+</body>
+</html>
