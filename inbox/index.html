@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Pirostore — Luxury Feedback Central</title>
+
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    :root {
+      --bg-dark: #05060b;
+      --card-bg: rgba(18, 20, 36, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #ff0055;
+      --primary-glow: rgba(255, 0, 85, 0.4);
+      --secondary: #00e5ff;
+      --secondary-glow: rgba(0, 229, 255, 0.4);
+      --gold: #ffd700;
+      --gold-glow: rgba(255, 215, 0, 0.35);
+      --text-white: #ffffff;
+      --text-dim: #94a3b8;
+      --success: #00f5a0;
+      --danger: #ff2a5f;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at 15% 15%, #240938 0%, #0a0c16 45%, #030407 100%);
+      color: var(--text-white);
+      min-height: 100vh;
+      padding: 30px 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 640px;
+    }
+
+    .luxury-header {
+      background: var(--card-bg);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 24px 20px;
+      text-align: center;
+      margin-bottom: 22px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(0, 229, 255, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .luxury-header::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 15%;
+      width: 70%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--secondary), var(--primary), transparent);
+    }
+
+    .brand-icon {
+      width: 58px;
+      height: 58px;
+      margin: 0 auto 12px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(255, 0, 85, 0.2), rgba(0, 229, 255, 0.2));
+      border: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      color: var(--secondary);
+      box-shadow: 0 0 25px var(--secondary-glow);
+    }
+
+    .brand-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      background: linear-gradient(90deg, #ffffff 10%, #00e5ff 55%, #ff0055 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+
+    .brand-desc {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .stat-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(14, 16, 28, 0.8);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 12px 18px;
+      margin-bottom: 20px;
+      font-size: 12px;
+    }
+
+    .pulse-online {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      color: var(--success);
+    }
+
+    .pulse-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 10px var(--success);
+      animation: pulseGlow 1.8s infinite alternate;
+    }
+
+    @keyframes pulseGlow {
+      from { transform: scale(0.85); opacity: 0.7; }
+      to { transform: scale(1.25); opacity: 1; }
+    }
+
+    .inbox-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .inbox-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 18px 18px 14px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+      animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transition: transform 0.25s, border-color 0.25s;
+    }
+
+    .inbox-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0, 229, 255, 0.3);
+    }
+
+    .inbox-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, var(--secondary), var(--primary));
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .user-profile-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--secondary);
+      box-shadow: 0 0 12px var(--secondary-glow);
+    }
+
+    .user-meta-names {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .user-display-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .user-handle {
+      font-size: 12px;
+      color: var(--secondary);
+      font-weight: 700;
+    }
+
+    .badge-category {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: rgba(255, 215, 0, 0.12);
+      color: var(--gold);
+      border: 1px solid rgba(255, 215, 0, 0.35);
+      letter-spacing: 0.5px;
+      box-shadow: 0 0 10px var(--gold-glow);
+    }
+
+    .message-bubble {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: #e2e8f0;
+      line-height: 1.6;
+      word-break: break-word;
+      margin-bottom: 12px;
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-dim);
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      padding-top: 10px;
+    }
+
+    .lock-indicator {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--text-dim);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 45px 20px;
+      background: var(--card-bg);
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="luxury-header">
+    <div class="brand-icon">
+      <i class="fa-solid fa-inbox"></i>
+    </div>
+    <h1 class="brand-title">PIRO INBOX FEEDBACK</h1>
+    <p class="brand-desc">Monitoring masukan, saran & laporan bug dari aplikasi secara realtime</p>
+  </div>
+
+  <div class="stat-bar">
+    <div class="pulse-online">
+      <span class="pulse-dot"></span> Realtime Active
+    </div>
+    <div id="feedbackCounter" style="color: var(--gold); font-weight: 800;">Total: 0 Pesan</div>
+  </div>
+
+  <div id="inboxContainer" class="inbox-list">
+    <div class="empty-state">
+      <i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; color: var(--secondary); margin-bottom: 10px;"></i>
+      <div>Menghubungkan ke cloud database...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyD3v3avQGZn6LpSfXft9sgNcOcroNeTN1A",
+    authDomain: "pirostore-db.firebaseapp.com",
+    databaseURL: "https://pirostore-db-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "pirostore-db",
+    storageBucket: "pirostore-db.firebasestorage.app",
+    messagingSenderId: "914886420309",
+    appId: "1:914886420309:web:51204859f14b2a6a0e31dc",
+    measurementId: "G-8FSV9CJWNY"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  function listenToIncomingFeedbacks() {
+    db.ref('feedbacks').on('value', (snapshot) => {
+      const container = document.getElementById('inboxContainer');
+      const counter = document.getElementById('feedbackCounter');
+      const data = snapshot.val();
+
+      if (!data) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fa-regular fa-envelope-open" style="font-size: 36px; color: var(--gold); margin-bottom: 12px;"></i>
+            <div style="font-weight: 700; color: var(--text-white); margin-bottom: 4px;">Belum Ada Masukan</div>
+            <div>Kotak masuk masih kosong, semua laporan baru akan muncul di sini.</div>
+          </div>
+        `;
+        counter.innerText = 'Total: 0 Pesan';
+        return;
+      }
+
+      const items = Object.keys(data).map(k => data[k]).reverse();
+      counter.innerText = `Total: ${items.length} Pesan`;
+
+      container.innerHTML = items.map(msg => `
+        <div class="inbox-card">
+          <div class="card-head">
+            <div class="user-profile-row">
+              <img src="${msg.avatar || 'https://ui-avatars.com/api/?name=User&background=00e5ff&color=000'}" class="user-avatar" />
+              <div class="user-meta-names">
+                <div class="user-display-name">${msg.name || 'Pengguna'}</div>
+                <div class="user-handle">${msg.username || '@user'}</div>
+              </div>
+            </div>
+            <span class="badge-category">${msg.category || 'Masukan'}</span>
+          </div>
+          <div class="message-bubble">${msg.message}</div>
+          <div class="card-footer">
+            <span><i class="fa-regular fa-clock" style="margin-right: 4px;"></i> ${msg.formattedDate || 'Baru saja'}</span>
+            <div class="lock-indicator"><i class="fa-solid fa-lock"></i> Read-Only</div>
+          </div>
+        </div>
+      `).join('');
+    });
+  }
+
+  window.addEventListener('DOMContentLoaded', listenToIncomingFeedbacks);
+</script>
+
+</body>
+</html>
