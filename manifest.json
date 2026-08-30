@@ -1,0 +1,23 @@
+{
+  "name": "Pirostore Official",
+  "short_name": "Pirostore",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#06070c",
+  "theme_color": "#06070c",
+  "description": "Layanan Digital Pirostore Official",
+  "icons": [
+    {
+      "src": "https://cdn.phototourl.com/free/2026-08-28-ea6beb31-3ec4-4e47-aec9-f1ca2e103c1d.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://cdn.phototourl.com/free/2026-08-28-ea6beb31-3ec4-4e47-aec9-f1ca2e103c1d.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
