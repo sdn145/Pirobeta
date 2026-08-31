@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>PiroStore — Beta Permission</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<style>
+:root{--bg:#05060a;--card:rgba(17,19,31,.82);--line:rgba(255,255,255,.09);--cyan:#00e5ff;--pink:#ff0055;--purple:#a855f7;--green:#00f5a0;--muted:#9aa0b8;--gold:#ffd700}
+*{box-sizing:border-box;font-family:'Plus Jakarta Sans',sans-serif}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at 20% 0,#2a0b40 0,#0c0d16 40%,#040508 100%);color:#fff}
+.wrap{width:min(100%,620px);margin:auto;padding:24px 16px 50px}
+.glass{background:var(--card);border:1px solid var(--line);backdrop-filter:blur(18px);border-radius:24px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.hero{padding:24px;margin-bottom:16px;position:relative;overflow:hidden}
+.hero:before{content:"";position:absolute;width:220px;height:220px;border-radius:50%;right:-90px;top:-100px;background:radial-gradient(circle,rgba(0,229,255,.22),transparent 70%)}
+.logo{width:72px;height:72px;border-radius:20px;display:grid;place-items:center;background:linear-gradient(135deg,#00e5ff,#a855f7,#ff0055);box-shadow:0 0 35px rgba(168,85,247,.35);font-size:30px}
+h1{font-family:Orbitron,sans-serif;font-size:24px;margin:16px 0 6px;letter-spacing:1px}
+.sub{color:var(--muted);font-size:12px;line-height:1.6}
+.user{display:none;align-items:center;gap:12px;margin-top:18px;padding:10px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.035)}
+.user img{width:42px;height:42px;border-radius:50%;object-fit:cover}
+.user b{font-size:12px}.user span{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+.panel{padding:18px}
+.login{display:flex;flex-direction:column;gap:12px}
+.google{width:100%;padding:13px;border:0;border-radius:13px;background:#fff;color:#202124;font-weight:800;cursor:pointer}
+.notice{padding:12px 14px;border-radius:13px;font-size:11px;line-height:1.55;background:rgba(0,229,255,.07);border:1px solid rgba(0,229,255,.18);color:#b9f8ff}
+input{width:100%;padding:13px 14px;background:#0b0d15;color:#fff;border:1px solid var(--line);border-radius:12px;outline:none}
+input:focus{border-color:var(--cyan);box-shadow:0 0 14px rgba(0,229,255,.16)}
+button{font:inherit}
+.primary{width:100%;padding:13px;border:0;border-radius:12px;background:linear-gradient(135deg,#a855f7,#6d28d9,#ff0055);color:#fff;font-weight:900;cursor:pointer}
+.danger{background:rgba(255,42,95,.1);color:#ff6b8f;border:1px solid rgba(255,42,95,.35)}
+.section-title{font-size:13px;font-weight:900;margin:0 0 10px}
+.search{margin:12px 0}
+.results{display:flex;flex-direction:column;gap:8px;max-height:330px;overflow:auto}
+.person{display:flex;align-items:center;gap:11px;padding:11px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.025)}
+.person img{width:42px;height:42px;border-radius:50%;object-fit:cover;background:#111}
+.person-main{flex:1;min-width:0}.person-main b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.person-main span{display:block;color:var(--cyan);font-size:10px;margin-top:2px}.person-main small{display:block;color:var(--muted);font-size:9px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.small-btn{padding:8px 10px;border-radius:9px;border:1px solid rgba(0,245,160,.35);background:rgba(0,245,160,.08);color:var(--green);font-size:10px;font-weight:900;cursor:pointer}
+.list{display:flex;flex-direction:column;gap:8px}
+.whitelist-item{display:flex;align-items:center;gap:10px;padding:11px;border-radius:13px;border:1px solid rgba(168,85,247,.2);background:rgba(168,85,247,.06)}
+.whitelist-item .info{flex:1;min-width:0}.info b{font-size:11px}.info div{font-size:9px;color:var(--muted);margin-top:2px}
+.remove{padding:7px 9px;border-radius:8px;border:1px solid rgba(255,42,95,.4);background:rgba(255,42,95,.08);color:#ff6b8f;font-size:9px;font-weight:900;cursor:pointer}
+.status{display:none;margin-top:10px;padding:10px 12px;border-radius:11px;font-size:10px}
+.status.ok{display:block;color:var(--green);background:rgba(0,245,160,.08);border:1px solid rgba(0,245,160,.2)}
+.status.err{display:block;color:#ff6b8f;background:rgba(255,42,95,.08);border:1px solid rgba(255,42,95,.2)}
+.hidden{display:none!important}
+.footer{text-align:center;color:#626a82;font-size:9px;margin-top:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="glass hero">
+    <div class="logo">β</div>
+    <h1>PIRO BETA PANEL</h1>
+    <div class="sub">Web khusus developer untuk menambah atau mencabut izin Beta Panel PiroStore. Hanya akun Google yang ditentukan yang dapat mengelola daftar izin.</div>
+    <div id="signedUser" class="user">
+      <img id="signedAvatar" src="" alt="">
+      <div><b id="signedName">-</b><span id="signedEmail">-</span></div>
+    </div>
+  </section>
+
+  <section id="loginCard" class="glass panel">
+    <div class="section-title">LOGIN DEVELOPER</div>
+    <div class="notice">Login harus menggunakan akun Google <b>ssucianandaputri@gmail.com</b>. Email lain otomatis ditolak dan tidak dapat menambah izin.</div>
+    <div style="height:8px"></div>
+    <button id="googleLogin" class="google" onclick="loginGoogle()">🔐 Masuk dengan Google</button>
+    <div id="loginStatus" class="status"></div>
+  </section>
+
+  <section id="managerCard" class="glass panel hidden">
+    <div class="section-title">TAMBAH USER BETA</div>
+    <div class="notice">Ketik <b>username</b> atau <b>nama profil</b>. Hasil yang bisa ditambahkan hanya berasal dari database pengguna PiroStore, jadi tidak bisa memasukkan nama acak.</div>
+    <div class="search"><input id="userSearch" placeholder="Contoh: @user12345 atau nama profil..." autocomplete="off"></div>
+    <div id="searchResults" class="results"></div>
+    <div id="managerStatus" class="status"></div>
+
+    <div style="height:22px"></div>
+    <div class="section-title">USER YANG SUDAH DIBERI IZIN</div>
+    <div id="whitelist" class="list"></div>
+
+    <div style="height:14px"></div>
+    <button class="primary danger" onclick="logoutGoogle()">Keluar dari Google</button>
+  </section>
+
+  <div class="footer">PiroStore Beta Permission • Firebase Realtime Database + Google Authentication</div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyD3v3avQGZn6LpSfXft9sgNcOcroNeTN1A",
+  authDomain: "pirostore-db.firebaseapp.com",
+  databaseURL: "https://pirostore-db-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "pirostore-db",
+  storageBucket: "pirostore-db.firebasestorage.app",
+  messagingSenderId: "914886420309",
+  appId: "1:914886420309:web:51204859f14b2a6a0e31dc",
+  measurementId: "G-8FSV9CJWNY"
+};
+const GOOGLE_CLIENT_ID = "891259431613-jn8rlebsu0prgdq6gu3ve16i4kd8h25i.apps.googleusercontent.com";
+const OWNER_EMAIL = "ssucianandaputri@gmail.com";
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+let allUsers = {};
+let whitelist = {};
+
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function norm(v){return String(v||'').trim().toLowerCase();}
+function key(v){return norm(v).replace(/[.#$[\]/]/g,'_');}
+function status(id,msg,ok=false){const e=document.getElementById(id);e.textContent=msg;e.className='status '+(ok?'ok':'err');}
+
+async function loginGoogle(){
+  try{
+    const provider=new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({prompt:'select_account'});
+    const result=await auth.signInWithPopup(provider);
+    if(norm(result.user.email)!==norm(OWNER_EMAIL)){
+      await auth.signOut();
+      status('loginStatus','Akses ditolak. Hanya '+OWNER_EMAIL+' yang boleh masuk.',false);
+      return;
+    }
+  }catch(e){
+    status('loginStatus','Login gagal: '+(e.message || 'periksa konfigurasi Google/Firebase.'),false);
+  }
+}
+
+async function logoutGoogle(){await auth.signOut();}
+
+auth.onAuthStateChanged(user=>{
+  const loginCard=document.getElementById('loginCard');
+  const manager=document.getElementById('managerCard');
+  const signed=document.getElementById('signedUser');
+  if(user && norm(user.email)===norm(OWNER_EMAIL)){
+    loginCard.classList.add('hidden'); manager.classList.remove('hidden'); signed.style.display='flex';
+    document.getElementById('signedAvatar').src=user.photoURL||'https://ui-avatars.com/api/?name=Developer';
+    document.getElementById('signedName').textContent=user.displayName||'Developer';
+    document.getElementById('signedEmail').textContent=user.email;
+    startManager();
+  }else{
+    loginCard.classList.remove('hidden'); manager.classList.add('hidden'); signed.style.display='none';
+  }
+});
+
+function startManager(){
+  db.ref('users').on('value',snap=>{
+    allUsers=snap.val()||{};
+    renderSearch();
+  });
+  db.ref('system_control/admin_whitelist').on('value',snap=>{
+    whitelist=snap.val()||{};
+    renderWhitelist();
+  });
+}
+
+document.getElementById('userSearch').addEventListener('input',renderSearch);
+
+function userMatches(u,q){
+  q=norm(q);
+  if(!q)return false;
+  const username=norm(u.username).replace(/^@/,'');
+  const name=norm(u.name||u.displayName);
+  return username===q.replace(/^@/,'') || name===q ||
+         username.includes(q.replace(/^@/,'')) || name.includes(q);
+}
+
+function renderSearch(){
+  const q=document.getElementById('userSearch').value;
+  const box=document.getElementById('searchResults');
+  if(!q.trim()){box.innerHTML='';return;}
+  const rows=Object.entries(allUsers).filter(([,u])=>userMatches(u,q)).slice(0,30);
+  if(!rows.length){box.innerHTML='<div class="notice">User tidak ditemukan di database PiroStore.</div>';return;}
+  box.innerHTML=rows.map(([id,u])=>{
+    const already=Object.values(whitelist).some(w=>norm(w.email)===norm(u.email) && norm(w.username).replace(/^@/,'')===norm(u.username).replace(/^@/,''));
+    return `<div class="person">
+      <img src="${esc(u.avatar||'https://ui-avatars.com/api/?name='+encodeURIComponent(u.name||'User'))}" alt="">
+      <div class="person-main"><b>${esc(u.name||'Tanpa nama')}</b><span>${esc(u.username||'@user')}</span><small>${esc(u.email||'')}</small></div>
+      <button class="small-btn" ${already?'disabled':''} onclick="addUser('${esc(id)}')" style="${already?'opacity:.45;cursor:not-allowed':''}">${already?'SUDAH':'ADD BETA'}</button>
+    </div>`;
+  }).join('');
+}
+
+async function addUser(id){
+  const u=allUsers[id];
+  if(!u || !u.email || !u.username){status('managerStatus','Data user tidak lengkap.',false);return;}
+  const existing=Object.values(whitelist).some(w=>norm(w.email)===norm(u.email) && norm(w.username).replace(/^@/,'')===norm(u.username).replace(/^@/,''));
+  if(existing){status('managerStatus','User tersebut sudah memiliki izin Beta.',false);return;}
+  const record={
+    email:u.email,
+    username:u.username,
+    name:u.name||u.displayName||'',
+    avatar:u.avatar||'',
+    addedBy:OWNER_EMAIL,
+    addedAt:firebase.database.ServerValue.TIMESTAMP
+  };
+  try{
+    // Database Rules wajib membatasi write node ini ke OWNER_EMAIL.
+    await db.ref('system_control/admin_whitelist').push(record);
+    status('managerStatus','Berhasil memberi izin Beta kepada '+(u.username||u.name)+'.',true);
+    document.getElementById('userSearch').value='';
+    renderSearch();
+  }catch(e){status('managerStatus','Gagal menambah izin: '+(e.message || 'Firebase Rules menolak akses.'),false);}
+}
+
+async function removeUser(id){
+  if(!confirm('Cabut izin Beta dari user ini?'))return;
+  try{
+    await db.ref('system_control/admin_whitelist/'+id).remove();
+    status('managerStatus','Izin Beta berhasil dicabut.',true);
+  }catch(e){status('managerStatus','Gagal mencabut izin: '+(e.message || 'periksa Firebase Rules.'),false);}
+}
+
+function renderWhitelist(){
+  const box=document.getElementById('whitelist');
+  const rows=Object.entries(whitelist);
+  if(!rows.length){box.innerHTML='<div class="notice">Belum ada user yang diberi izin Beta.</div>';return;}
+  box.innerHTML=rows.map(([id,w])=>`<div class="whitelist-item">
+    <div class="info"><b>${esc(w.name||'Tanpa nama')}</b><div>${esc(w.username||'@user')} • ${esc(w.email||'-')}</div></div>
+    <button class="remove" onclick="removeUser('${esc(id)}')">CABUT</button>
+  </div>`).join('');
+  renderSearch();
+}
+</script>
+</body>
+</html>
