@@ -1,1 +1,9 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "dev.pages.pirobeta.twa",
+        "sha256_cert_fingerprints": ["28:8B:2A:0A:75:62:79:65:E6:79:2A:AD:9B:54:03:BD:E3:4E:2A:09:AC:EC:BF:59:81:70:89:F9:30:1B:BE:E2"]
+      }
+    }]
 
